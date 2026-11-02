@@ -1,5 +1,6 @@
 import React from 'react';
-import { MapPin, Phone, Mail, Train, Car, Shield, Compass, Clock } from 'lucide-react';
+import { MapPin, Phone, Mail, Train, Car, Shield, Compass, Clock, Navigation } from 'lucide-react';
+import { StadiumMap } from './StadiumMap';
 
 export const ContactLocationSection: React.FC = () => {
   const gates = [
@@ -15,20 +16,25 @@ export const ContactLocationSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-12">
           <span className="text-xs uppercase tracking-[0.2em] font-bold text-[#C5A059] flex items-center justify-center gap-1.5 mb-2">
             <Compass className="w-3.5 h-3.5 text-[#E5C378]" />
             Getting Here &amp; Access Protocol
           </span>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white uppercase">
-            Location, Gates &amp; Transport
+            Stadium Location &amp; Interactive Map
           </h2>
           <p className="mt-3 text-sm sm:text-base text-slate-400">
-            Conveniently situated at Jamhuri Park sports precinct along the Ngong Road corridor in Nairobi, with express rail, highway, and parking connectivity.
+            Jamhuri Sports Precinct along the Ngong Road corridor in Nairobi, Kenya. Explore gates, turnstiles, parking, and transit connections on the live map below.
           </p>
         </div>
 
-        {/* 2-Column Split: Map & Transit info on Left / Gates Directory on Right */}
+        {/* Live Interactive Google Map */}
+        <div className="mb-12">
+          <StadiumMap />
+        </div>
+
+        {/* 2-Column Split: Transit & Hotlines on Left / Gates Directory on Right */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Left Column: Transit & Contact Details */}

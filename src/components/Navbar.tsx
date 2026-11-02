@@ -29,7 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'seating', label: 'Seating Plan' },
     { id: 'facilities', label: 'Facilities & VIP' },
     { id: 'news', label: 'News & Media' },
-    { id: 'contact', label: 'Location & Gates' },
+    { id: 'contact', label: 'Location & Map' },
   ];
 
   return (
