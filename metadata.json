@@ -1,0 +1,6 @@
+{
+  "name": "Talanta Stadium Kenya",
+  "description": "Modern premium stadium management and digital event ticketing platform for Talanta Sports City in Nairobi, Kenya.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
