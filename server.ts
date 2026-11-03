@@ -17,6 +17,7 @@ import { getOrCreateUser, getUserByUid } from './src/db/users.ts';
 import { adminAuth } from './src/lib/firebase-admin.ts';
 import { optionalAuth, requireAuth } from './src/middleware/auth.ts';
 import type { AuthRequest } from './src/middleware/auth.ts';
+import { NAIROBI_ROOMS } from './src/constants/nairobiRooms.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,6 +26,7 @@ const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 app.use(express.json());
+app.use('/videos', express.static(path.resolve(__dirname, 'public/videos')));
 
 interface ServerTicket {
   id: string;
@@ -83,6 +85,7 @@ const DB: {
   events: any[];
   pastResults: any[];
   bookings: ServerBooking[];
+  roomBookings: any[];
   news: any[];
   announcements: any[];
   mpesaTransactions: Map<string, any>;
@@ -453,7 +456,8 @@ const DB: {
     }
   ],
 
-  mpesaTransactions: new Map<string, any>()
+  mpesaTransactions: new Map<string, any>(),
+  roomBookings: []
 };
 
 // ==========================================
@@ -1042,6 +1046,170 @@ app.post('/api/bookings/:id/cancel', (req: Request, res: Response) => {
   });
 
   res.json({ success: true, message: 'Booking cancelled successfully. M-Pesa refund request queued.', booking });
+});
+
+// ==========================================
+// NAIROBI 50 CLASSIC ROOMS API ROUTES
+// ==========================================
+
+// Get all 50 classic Nairobi rooms with filters & sorting
+app.get('/api/rooms', (req: Request, res: Response) => {
+  const { neighborhood, category, search, minPrice, maxPrice, sortBy } = req.query;
+
+  let rooms = [...NAIROBI_ROOMS];
+
+  if (neighborhood && neighborhood !== 'all') {
+    rooms = rooms.filter(r => r.neighborhood.toLowerCase() === String(neighborhood).toLowerCase());
+  }
+
+  if (category && category !== 'all') {
+    rooms = rooms.filter(r => r.spaceCategory.toLowerCase() === String(category).toLowerCase());
+  }
+
+  if (search) {
+    const s = String(search).toLowerCase();
+    rooms = rooms.filter(r =>
+      r.hotelName.toLowerCase().includes(s) ||
+      r.roomName.toLowerCase().includes(s) ||
+      r.neighborhood.toLowerCase().includes(s) ||
+      r.classicFeatures.some(f => f.toLowerCase().includes(s))
+    );
+  }
+
+  if (minPrice) {
+    const min = Number(minPrice);
+    if (!isNaN(min)) rooms = rooms.filter(r => r.pricePerNightKes >= min);
+  }
+
+  if (maxPrice) {
+    const max = Number(maxPrice);
+    if (!isNaN(max)) rooms = rooms.filter(r => r.pricePerNightKes <= max);
+  }
+
+  // Sort
+  if (sortBy === 'price_asc') {
+    rooms.sort((a, b) => a.pricePerNightKes - b.pricePerNightKes);
+  } else if (sortBy === 'price_desc') {
+    rooms.sort((a, b) => b.pricePerNightKes - a.pricePerNightKes);
+  } else if (sortBy === 'rating') {
+    rooms.sort((a, b) => b.rating - a.rating);
+  } else if (sortBy === 'distance') {
+    rooms.sort((a, b) => a.distanceKm - b.distanceKm);
+  } else if (sortBy === 'space') {
+    rooms.sort((a, b) => b.floorAreaSqM - a.floorAreaSqM);
+  }
+
+  res.json({
+    total: rooms.length,
+    allCount: NAIROBI_ROOMS.length,
+    rooms,
+  });
+});
+
+// Single room by ID
+app.get('/api/rooms/:id', (req: Request, res: Response) => {
+  const room = NAIROBI_ROOMS.find(r => r.id === req.params.id);
+  if (!room) {
+    return res.status(404).json({ error: 'Classic room not found' });
+  }
+  res.json({ room });
+});
+
+// Create Room Booking
+app.post('/api/room-bookings', (req: Request, res: Response) => {
+  const {
+    roomId,
+    checkInDate,
+    checkOutDate,
+    guestCount = 2,
+    guestName,
+    guestPhone,
+    guestEmail,
+    nationalId,
+    specialRequests = '',
+    userId = 'usr_fan_01',
+  } = req.body;
+
+  const room = NAIROBI_ROOMS.find(r => r.id === roomId);
+  if (!room) {
+    return res.status(404).json({ error: 'Room not found in Nairobi collection' });
+  }
+
+  if (!checkInDate || !checkOutDate || !guestName || !guestPhone) {
+    return res.status(400).json({ error: 'Please provide check-in date, check-out date, guest name, and phone number' });
+  }
+
+  // Calculate nights
+  const checkIn = new Date(checkInDate);
+  const checkOut = new Date(checkOutDate);
+  const diffTime = checkOut.getTime() - checkIn.getTime();
+  const calculatedNights = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+  const subtotalKes = calculatedNights * room.pricePerNightKes;
+  const tourismLevyKes = Math.round(subtotalKes * 0.02); // 2% Kenya Tourism Training & Infrastructure Levy
+  const totalAmountKes = subtotalKes + tourismLevyKes;
+
+  const randomRefNum = Math.floor(10000 + Math.random() * 90000);
+  const bookingReference = `HTL-NBO-${randomRefNum}`;
+  const qrCodeToken = `NBO-HOTEL-${bookingReference}-${room.id}-${Date.now()}`;
+
+  const newRoomBooking = {
+    id: `rm_bkg_${Date.now()}`,
+    bookingReference,
+    userId,
+    roomId: room.id,
+    roomName: room.roomName,
+    hotelName: room.hotelName,
+    neighborhood: room.neighborhood,
+    address: room.address,
+    checkInDate,
+    checkOutDate,
+    nights: calculatedNights,
+    guestCount: Number(guestCount) || 2,
+    guestName,
+    guestPhone,
+    guestEmail: guestEmail || 'guest@example.com',
+    nationalId: nationalId || '34567890',
+    specialRequests,
+    pricePerNightKes: room.pricePerNightKes,
+    subtotalKes,
+    tourismLevyKes,
+    totalAmountKes,
+    status: 'confirmed',
+    imageUrl: room.imageUrl,
+    distanceToTalanta: room.distanceToTalanta,
+    matchdayShuttleIncluded: room.matchdayShuttleIncluded,
+    qrCodeToken,
+    createdAt: new Date().toISOString(),
+    paymentReceipt: `TK${Math.floor(10000000 + Math.random() * 90000000)}`,
+  };
+
+  DB.roomBookings.unshift(newRoomBooking);
+
+  logAuditEvent('ROOM_BOOKED', userId, bookingReference, JSON.stringify({ hotel: room.hotelName, amount: totalAmountKes }));
+
+  res.status(201).json({
+    success: true,
+    booking: newRoomBooking,
+  });
+});
+
+// Get User Room Bookings
+app.get('/api/room-bookings', (req: Request, res: Response) => {
+  const userId = req.headers['x-user-id'] as string;
+  const userBookings = DB.roomBookings.filter(b => b.userId === (userId || 'usr_fan_01'));
+  res.json({ bookings: userBookings });
+});
+
+// Cancel Room Booking
+app.post('/api/room-bookings/:id/cancel', (req: Request, res: Response) => {
+  const booking = DB.roomBookings.find(b => b.id === req.params.id || b.bookingReference === req.params.id);
+  if (!booking) {
+    return res.status(404).json({ error: 'Room booking not found' });
+  }
+
+  booking.status = 'cancelled';
+  res.json({ success: true, message: 'Room reservation cancelled successfully.', booking });
 });
 
 // Steward / Turnstile QR Code Verification Endpoint

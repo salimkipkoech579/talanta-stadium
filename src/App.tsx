@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { EventItem, SeatingSection, BookingItem, UserProfile, NewsItem, AnnouncementItem, TicketItem } from './types';
+import {
+  EventItem,
+  SeatingSection,
+  BookingItem,
+  UserProfile,
+  NewsItem,
+  AnnouncementItem,
+  TicketItem,
+  RoomItem,
+  RoomBookingItem,
+} from './types';
 import { DEFAULT_SECTIONS } from './constants/seating';
 import { Navbar } from './components/Navbar';
 import { MarqueeAlert } from './components/MarqueeAlert';
@@ -7,6 +17,7 @@ import { HeroSection } from './components/HeroSection';
 import { StadiumVideoTour } from './components/StadiumVideoTour';
 import { InteractiveSeatingPlan } from './components/InteractiveSeatingPlan';
 import { EventsSection } from './components/EventsSection';
+import { NairobiRoomsSection } from './components/NairobiRoomsSection';
 import { FacilitiesSection } from './components/FacilitiesSection';
 import { GallerySection } from './components/GallerySection';
 import { NewsSection } from './components/NewsSection';
@@ -15,6 +26,10 @@ import { UserDashboard } from './components/UserDashboard';
 import { AdminDashboard } from './components/AdminDashboard';
 import { BookingModal } from './components/BookingModal';
 import { TicketPassModal } from './components/TicketPassModal';
+import { RoomDetailsModal } from './components/RoomDetailsModal';
+import { RoomBookingModal } from './components/RoomBookingModal';
+import { RoomVideoModal } from './components/RoomVideoModal';
+import { NAIROBI_ROOMS } from './constants/nairobiRooms';
 import { GateTurnstileScanner } from './components/GateTurnstileScanner';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleAuthProvider } from './lib/firebase';
@@ -37,6 +52,7 @@ export default function App() {
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
   const [pastResults, setPastResults] = useState<any[]>([]);
   const [userBookings, setUserBookings] = useState<BookingItem[]>([]);
+  const [roomBookings, setRoomBookings] = useState<RoomBookingItem[]>([]);
 
   // Modals state
   const [bookingEvent, setBookingEvent] = useState<EventItem | null>(null);
@@ -44,6 +60,11 @@ export default function App() {
   const [activeTicketPass, setActiveTicketPass] = useState<BookingItem | null>(null);
   const [scannerOpen, setScannerOpen] = useState<boolean>(false);
   const [scannerPrefillTicket, setScannerPrefillTicket] = useState<TicketItem | null>(null);
+
+  // Room Modals state
+  const [selectedRoomForDetails, setSelectedRoomForDetails] = useState<RoomItem | null>(null);
+  const [selectedRoomForBooking, setSelectedRoomForBooking] = useState<RoomItem | null>(null);
+  const [selectedRoomForVideo, setSelectedRoomForVideo] = useState<RoomItem | null>(null);
 
   // Fetch initial data
   const fetchData = async () => {
@@ -86,7 +107,7 @@ export default function App() {
         setPastResults(resData.results || []);
       }
 
-      // 6. Bookings
+      // 6. Match Bookings
       const bkgRes = await fetch('/api/bookings', {
         headers: {
           'x-user-id': currentUser.id,
@@ -96,6 +117,17 @@ export default function App() {
       if (bkgRes.ok) {
         const bkgData = await bkgRes.json();
         setUserBookings(bkgData.bookings || []);
+      }
+
+      // 7. Hotel Room Bookings
+      const rmBkgRes = await fetch('/api/room-bookings', {
+        headers: {
+          'x-user-id': currentUser.id,
+        },
+      });
+      if (rmBkgRes.ok) {
+        const rmBkgData = await rmBkgRes.json();
+        setRoomBookings(rmBkgData.bookings || []);
       }
     } catch (err) {
       console.error('Error fetching initial data:', err);
@@ -123,7 +155,7 @@ export default function App() {
     }
   };
 
-  // Booking handlers
+  // Match Booking handlers
   const handleStartBooking = (event: EventItem, section?: SeatingSection) => {
     setBookingEvent(event);
     setBookingSection(section);
@@ -133,25 +165,52 @@ export default function App() {
     setUserBookings(prev => [newBooking, ...prev]);
     setBookingEvent(null);
     setBookingSection(undefined);
-    // Show digital ticket pass immediately
     setActiveTicketPass(newBooking);
     fetchData();
   };
 
   const handleCancelBooking = async (bookingId: string) => {
     try {
-      const res = await fetch(`/api/bookings/${bookingId}/cancel`, {
-        method: 'POST',
-      });
+      const res = await fetch(`/api/bookings/${bookingId}/cancel`, { method: 'POST' });
       if (res.ok) {
         fetchData();
       }
     } catch (err) {
-      alert('Failed to cancel booking');
+      console.error('Failed to cancel match booking:', err);
     }
   };
 
-  // Test scan from ticket pass modal
+  // Room Booking handlers
+  const handleSelectRoom = (room: RoomItem) => {
+    setSelectedRoomForDetails(room);
+  };
+
+  const handleBookRoom = (room: RoomItem) => {
+    setSelectedRoomForDetails(null);
+    setSelectedRoomForVideo(null);
+    setSelectedRoomForBooking(room);
+  };
+
+  const handleWatchRoomVideo = (room: RoomItem) => {
+    setSelectedRoomForVideo(room);
+  };
+
+  const handleRoomBookingConfirmed = (newBooking: RoomBookingItem) => {
+    setRoomBookings(prev => [newBooking, ...prev]);
+    fetchData();
+  };
+
+  const handleCancelRoomBooking = async (bookingId: string) => {
+    try {
+      const res = await fetch(`/api/room-bookings/${bookingId}/cancel`, { method: 'POST' });
+      if (res.ok) {
+        fetchData();
+      }
+    } catch (err) {
+      console.error('Failed to cancel room booking:', err);
+    }
+  };
+
   const handleTestScanTicket = (ticket: TicketItem) => {
     setActiveTicketPass(null);
     setScannerPrefillTicket(ticket);
@@ -161,21 +220,18 @@ export default function App() {
   const handleGoogleSignIn = async () => {
     try {
       const cred = await signInWithPopup(auth, googleAuthProvider);
-      const token = await cred.user.getIdToken();
+      const idToken = await cred.user.getIdToken();
       const res = await fetch('/api/auth/firebase-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: token }),
+        body: JSON.stringify({ idToken }),
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.user) {
-          setCurrentUser(data.user);
-          fetchData();
-        }
+        setCurrentUser(data.user);
       }
-    } catch (err) {
-      console.error('Google Sign-In error:', err);
+    } catch (err: any) {
+      console.error('Google Sign-In failed:', err);
     }
   };
 
@@ -232,6 +288,13 @@ export default function App() {
               }}
             />
 
+            {/* Curated 50 Best Classic Rooms in Nairobi on Home */}
+            <NairobiRoomsSection
+              onSelectRoom={handleSelectRoom}
+              onBookRoom={handleBookRoom}
+              onWatchVideo={handleWatchRoomVideo}
+            />
+
             <FacilitiesSection />
 
             <GallerySection />
@@ -240,6 +303,15 @@ export default function App() {
 
             <ContactLocationSection />
           </>
+        )}
+
+        {/* Dedicated Nairobi Rooms Tab */}
+        {activeTab === 'rooms' && (
+          <NairobiRoomsSection
+            onSelectRoom={handleSelectRoom}
+            onBookRoom={handleBookRoom}
+            onWatchVideo={handleWatchRoomVideo}
+          />
         )}
 
         {activeTab === 'tour' && (
@@ -286,9 +358,12 @@ export default function App() {
           <UserDashboard
             currentUser={currentUser}
             bookings={userBookings}
+            roomBookings={roomBookings}
             onViewTicketPass={(booking) => setActiveTicketPass(booking)}
             onCancelBooking={handleCancelBooking}
+            onCancelRoomBooking={handleCancelRoomBooking}
             onExploreEvents={() => setActiveTab('events')}
+            onExploreRooms={() => setActiveTab('rooms')}
           />
         )}
 
@@ -308,7 +383,7 @@ export default function App() {
       {/* Footer */}
       <Footer onNavigate={(tab) => setActiveTab(tab)} />
 
-      {/* MODAL 1: BOOKING & M-PESA FUNNEL */}
+      {/* MODAL 1: MATCH TICKET BOOKING & M-PESA */}
       {bookingEvent && (
         <BookingModal
           event={bookingEvent}
@@ -323,7 +398,7 @@ export default function App() {
         />
       )}
 
-      {/* MODAL 2: DIGITAL TICKET PASS & QR CODE */}
+      {/* MODAL 2: DIGITAL MATCH TICKET PASS & QR CODE */}
       {activeTicketPass && (
         <TicketPassModal
           booking={activeTicketPass}
@@ -332,7 +407,44 @@ export default function App() {
         />
       )}
 
-      {/* MODAL 3: GATE STEWARD TURNSTILE SCANNER */}
+      {/* MODAL 3: ROOM DETAILS & GALLERY */}
+      {selectedRoomForDetails && (
+        <RoomDetailsModal
+          room={selectedRoomForDetails}
+          onClose={() => setSelectedRoomForDetails(null)}
+          onBookNow={handleBookRoom}
+        />
+      )}
+
+      {/* MODAL 4: ROOM RESERVATION & M-PESA FUNNEL */}
+      {selectedRoomForBooking && (
+        <RoomBookingModal
+          room={selectedRoomForBooking}
+          currentUser={currentUser}
+          onClose={() => setSelectedRoomForBooking(null)}
+          onBookingConfirmed={handleRoomBookingConfirmed}
+        />
+      )}
+
+      {/* MODAL 5: ROOM HD VIDEO TOUR & VIRTUAL WALKTHROUGH */}
+      {selectedRoomForVideo && (
+        <RoomVideoModal
+          room={selectedRoomForVideo}
+          allRooms={NAIROBI_ROOMS}
+          onClose={() => setSelectedRoomForVideo(null)}
+          onBookNow={(room) => {
+            setSelectedRoomForVideo(null);
+            setSelectedRoomForBooking(room);
+          }}
+          onViewDetails={(room) => {
+            setSelectedRoomForVideo(null);
+            setSelectedRoomForDetails(room);
+          }}
+          onSwitchRoom={(room) => setSelectedRoomForVideo(room)}
+        />
+      )}
+
+      {/* MODAL 5: GATE STEWARD TURNSTILE SCANNER */}
       {scannerOpen && (
         <GateTurnstileScanner
           prefillTicket={scannerPrefillTicket}

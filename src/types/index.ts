@@ -132,3 +132,65 @@ export interface AdminStats {
     capacity: number;
   }[];
 }
+
+export type NairobiNeighborhood = 'Karen' | 'Westlands' | 'Kilimani' | 'Upper Hill' | 'CBD' | 'Gigiri' | 'National Park Border';
+export type RoomSpaceCategory = 'Presidential & Skybox' | 'Executive Classic' | 'Boutique Heritage' | 'Panoramic Suite' | 'Luxury Lodge' | 'Manor & Holiday House';
+
+export interface RoomItem {
+  id: string;
+  hotelName: string;
+  roomName: string;
+  neighborhood: NairobiNeighborhood;
+  address: string;
+  distanceToTalanta: string;
+  distanceKm: number;
+  spaceCategory: RoomSpaceCategory;
+  floorAreaSqM: number;
+  bedConfig: string;
+  guestCapacity: number;
+  pricePerNightKes: number;
+  rating: number;
+  reviewsCount: number;
+  bookingScoreText?: string;
+  propertyType?: 'Hotel & Suite' | 'Private House & Manor' | 'Serviced Apartment' | 'Safari Lodge';
+  houseHighlights?: string[];
+  imageUrl: string;
+  galleryUrls: string[];
+  classicFeatures: string[];
+  cancellationPolicy: string;
+  shortDescription: string;
+  matchdayShuttleIncluded: boolean;
+  availableUnits: number;
+  videoUrl?: string;
+  videoPoster?: string;
+  videoDuration?: string;
+  videoHighlights?: string[];
+}
+
+export interface RoomBookingItem {
+  id: string;
+  bookingReference: string;
+  userId: string;
+  roomId: string;
+  roomName: string;
+  hotelName: string;
+  neighborhood: string;
+  address?: string;
+  checkInDate: string;
+  checkOutDate: string;
+  nights: number;
+  guestCount: number;
+  guestName: string;
+  guestPhone: string;
+  guestEmail: string;
+  nationalId: string;
+  specialRequests?: string;
+  pricePerNightKes: number;
+  subtotalKes: number;
+  tourismLevyKes: number;
+  totalAmountKes: number;
+  status: 'confirmed' | 'pending' | 'cancelled';
+  paymentReceipt?: string;
+  qrCodeToken: string;
+  createdAt: string;
+}

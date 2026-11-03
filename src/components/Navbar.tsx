@@ -26,11 +26,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navLinks = [
     { id: 'home', label: 'Home' },
-    { id: 'tour', label: 'Video Tour' },
+    { id: 'rooms', label: 'Nairobi Rooms (50)' },
     { id: 'events', label: 'Fixtures & Events' },
     { id: 'seating', label: 'Seating Plan' },
     { id: 'facilities', label: 'Facilities & VIP' },
-    { id: 'news', label: 'News & Media' },
+    { id: 'tour', label: 'Video Tour' },
     { id: 'contact', label: 'Location & Map' },
   ];
 
