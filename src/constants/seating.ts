@@ -1,7 +1,4 @@
 import type { SeatingSection } from '../types';
 
-/**
- * Seating inventory must come from the configured venue database.
- * Do not show guessed availability or prices as bookable inventory.
- */
+/** Seating inventory is sourced from the venue database, not client-side sample data. */
 export const DEFAULT_SECTIONS: SeatingSection[] = [];
