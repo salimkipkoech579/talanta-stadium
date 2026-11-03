@@ -131,21 +131,21 @@ export const StadiumMap: React.FC = () => {
   };
 
   return (
-    <div className="rounded-3xl overflow-hidden bg-[#0a100c] border border-[#1e2c24] shadow-2xl transition-all">
+    <div className="rounded-2xl overflow-hidden bg-white border border-gray-200 shadow-sm transition-all">
       {/* Interactive Controls Bar */}
-      <div className="p-4 sm:p-5 border-b border-[#1c2c22] bg-[#060a08]/90 backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
+      <div className="p-4 sm:p-5 border-b border-gray-200 bg-white flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#005A2B]/40 border border-[#0FA958]/30 flex items-center justify-center text-[#0FA958]">
+          <div className="w-9 h-9 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
             <MapPin className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-white tracking-wide flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-bold text-gray-900 tracking-wide flex items-center gap-2">
               Talanta Sports City Map
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-[#0FA958]/20 text-[#0FA958] border border-[#0FA958]/30">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                 Live Geolocation
               </span>
             </h3>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-gray-500">
               Jamhuri Park Sports Precinct, Ngong Road · Nairobi, Kenya (-1.3067, 36.7700)
             </p>
           </div>
@@ -154,23 +154,23 @@ export const StadiumMap: React.FC = () => {
         {/* View Mode & Directions */}
         <div className="flex items-center gap-2">
           {/* Map Style Selector */}
-          <div className="flex items-center bg-[#131d17] p-1 rounded-xl border border-[#1c2c22] text-xs">
+          <div className="flex items-center bg-gray-100 p-1 rounded-lg border border-gray-200 text-xs">
             <button
               onClick={() => setMapType('hybrid')}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+              className={`px-2.5 py-1 rounded-md font-medium transition-all ${
                 mapType === 'hybrid'
-                  ? 'bg-[#005A2B] text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Satellite
             </button>
             <button
               onClick={() => setMapType('roadmap')}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+              className={`px-2.5 py-1 rounded-md font-medium transition-all ${
                 mapType === 'roadmap'
-                  ? 'bg-[#005A2B] text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Streets
@@ -179,57 +179,57 @@ export const StadiumMap: React.FC = () => {
 
           <button
             onClick={() => openGoogleMapsDirections(stadiumCenter.lat, stadiumCenter.lng)}
-            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#E5C378] text-black font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-[#C5A059]/20 hover:brightness-110 active:scale-95 transition-all"
+            className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
           >
             <Navigation className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Navigate in</span> Google Maps
-            <ExternalLink className="w-3 h-3 opacity-70" />
+            <ExternalLink className="w-3 h-3 opacity-80" />
           </button>
         </div>
       </div>
 
       {/* Category Filter Pills */}
-      <div className="px-4 py-2.5 bg-[#090f0b] border-b border-[#1c2c22] flex items-center gap-2 overflow-x-auto scrollbar-none text-xs">
-        <span className="text-[11px] text-slate-500 font-medium shrink-0 flex items-center gap-1 mr-1">
-          <Layers className="w-3 h-3 text-[#C5A059]" />
+      <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center gap-2 overflow-x-auto scrollbar-none text-xs">
+        <span className="text-[11px] text-gray-500 font-medium shrink-0 flex items-center gap-1 mr-1">
+          <Layers className="w-3 h-3 text-blue-600" />
           Filter:
         </span>
         <button
           onClick={() => setActiveFilter('all')}
-          className={`px-3 py-1 rounded-lg font-semibold shrink-0 transition-all ${
+          className={`px-3 py-1 rounded-md font-semibold shrink-0 transition-colors cursor-pointer ${
             activeFilter === 'all'
-              ? 'bg-[#0FA958] text-white'
-              : 'bg-[#121c16] text-slate-400 hover:text-slate-200 border border-[#1c2c22]'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
           }`}
         >
           All Locations ({STADIUM_PINS.length})
         </button>
         <button
           onClick={() => setActiveFilter('gate')}
-          className={`px-3 py-1 rounded-lg font-semibold shrink-0 transition-all ${
+          className={`px-3 py-1 rounded-md font-semibold shrink-0 transition-colors cursor-pointer ${
             activeFilter === 'gate'
-              ? 'bg-[#0FA958] text-white'
-              : 'bg-[#121c16] text-slate-400 hover:text-slate-200 border border-[#1c2c22]'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
           }`}
         >
           Gates &amp; Turnstiles (5)
         </button>
         <button
           onClick={() => setActiveFilter('transit')}
-          className={`px-3 py-1 rounded-lg font-semibold shrink-0 transition-all ${
+          className={`px-3 py-1 rounded-md font-semibold shrink-0 transition-colors cursor-pointer ${
             activeFilter === 'transit'
-              ? 'bg-[#0FA958] text-white'
-              : 'bg-[#121c16] text-slate-400 hover:text-slate-200 border border-[#1c2c22]'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
           }`}
         >
           Rail &amp; Transit
         </button>
         <button
           onClick={() => setActiveFilter('parking')}
-          className={`px-3 py-1 rounded-lg font-semibold shrink-0 transition-all ${
+          className={`px-3 py-1 rounded-md font-semibold shrink-0 transition-colors cursor-pointer ${
             activeFilter === 'parking'
-              ? 'bg-[#0FA958] text-white'
-              : 'bg-[#121c16] text-slate-400 hover:text-slate-200 border border-[#1c2c22]'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
           }`}
         >
           Vehicle Parking
@@ -324,26 +324,26 @@ export const StadiumMap: React.FC = () => {
         </APIProvider>
 
         {/* Floating Quick Legend / Location Summary */}
-        <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-md p-3.5 rounded-2xl bg-[#060a08]/92 backdrop-blur-md border border-[#1e2c24] shadow-2xl pointer-events-auto">
+        <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-md p-3.5 rounded-xl bg-white/95 backdrop-blur-md border border-gray-200 shadow-xl pointer-events-auto text-gray-900">
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#0FA958] animate-pulse" />
-                <span className="text-xs font-bold text-white uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-blue-600" />
+                <span className="text-xs font-bold text-gray-900 uppercase tracking-wider">
                   Selected Destination
                 </span>
               </div>
-              <h5 className="text-sm font-bold text-[#E5C378] mt-0.5">
+              <h5 className="text-sm font-bold text-blue-700 mt-0.5">
                 {selectedPin ? selectedPin.title : 'Talanta Sports City'}
               </h5>
-              <p className="text-[11px] text-slate-300 mt-1 line-clamp-2">
+              <p className="text-[11px] text-gray-600 mt-1 line-clamp-2">
                 {selectedPin ? selectedPin.description : 'Click any marker to view entry gates, turnstiles, and transit links.'}
               </p>
             </div>
             {selectedPin && (
               <button
                 onClick={() => openGoogleMapsDirections(selectedPin.lat, selectedPin.lng)}
-                className="shrink-0 p-2.5 rounded-xl bg-[#005A2B] hover:bg-[#0FA958] text-white transition-all shadow-md"
+                className="shrink-0 p-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-xs cursor-pointer"
                 title="Get Directions"
               >
                 <Navigation className="w-4 h-4" />
@@ -354,28 +354,28 @@ export const StadiumMap: React.FC = () => {
       </div>
 
       {/* Transit Quick Links Bar */}
-      <div className="p-4 bg-[#070b09] border-t border-[#1c2c22] grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-[#0d1510] border border-[#1a281e]">
-          <Train className="w-4 h-4 text-[#0FA958] shrink-0" />
+      <div className="p-4 bg-gray-50 border-t border-gray-200 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+        <div className="flex items-center gap-3 p-2.5 rounded-lg bg-white border border-gray-200 shadow-xs">
+          <Train className="w-4 h-4 text-blue-600 shrink-0" />
           <div>
-            <span className="text-[10px] text-slate-400 block font-medium">Commuter Rail</span>
-            <strong className="text-white text-xs">14 min from CBD</strong>
+            <span className="text-[10px] text-gray-500 block font-medium">Commuter Rail</span>
+            <strong className="text-gray-900 text-xs">14 min from CBD</strong>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-[#0d1510] border border-[#1a281e]">
-          <Car className="w-4 h-4 text-[#C5A059] shrink-0" />
+        <div className="flex items-center gap-3 p-2.5 rounded-lg bg-white border border-gray-200 shadow-xs">
+          <Car className="w-4 h-4 text-blue-600 shrink-0" />
           <div>
-            <span className="text-[10px] text-slate-400 block font-medium">Expressway Off-ramp</span>
-            <strong className="text-white text-xs">Ngong Rd Jamhuri Gate</strong>
+            <span className="text-[10px] text-gray-500 block font-medium">Expressway Off-ramp</span>
+            <strong className="text-gray-900 text-xs">Ngong Rd Jamhuri Gate</strong>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-[#0d1510] border border-[#1a281e]">
-          <CheckCircle2 className="w-4 h-4 text-[#34D399] shrink-0" />
+        <div className="flex items-center gap-3 p-2.5 rounded-lg bg-white border border-gray-200 shadow-xs">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <div>
-            <span className="text-[10px] text-slate-400 block font-medium">Turnstiles Status</span>
-            <strong className="text-white text-xs">72 Automated Gates Open</strong>
+            <span className="text-[10px] text-gray-500 block font-medium">Turnstiles Status</span>
+            <strong className="text-gray-900 text-xs">72 Automated Gates Open</strong>
           </div>
         </div>
       </div>

@@ -107,83 +107,83 @@ export const GallerySection: React.FC = () => {
   });
 
   return (
-    <section className="py-20 bg-[#060908] border-t border-[#1c2c22]">
+    <section className="py-16 bg-white border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <span className="text-xs uppercase tracking-[0.2em] font-bold text-[#C5A059] flex items-center gap-1.5 mb-2">
-              <Camera className="w-3.5 h-3.5 text-[#E5C378]" />
+            <span className="text-xs uppercase tracking-wider font-bold text-blue-600 flex items-center gap-1.5 mb-2">
+              <Camera className="w-3.5 h-3.5 text-blue-600" />
               Official Photographic Showcase
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white uppercase">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
               Talanta Stadium Gallery
             </h2>
-            <p className="mt-2 text-sm text-slate-400 max-w-xl">
+            <p className="mt-2 text-sm text-gray-600 max-w-xl">
               Authentic previews of Talanta Sports City (Raila Amolo Odinga International Stadium) — capturing the Maasai shield facade, pitch bowl, night illumination, and construction milestones.
             </p>
           </div>
 
           {/* Category Filter Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-[#0d1410] border border-[#1e2c24]">
+          <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-lg bg-gray-100 border border-gray-200 text-xs">
             <button
               onClick={() => setGalleryFilter('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer ${
                 galleryFilter === 'all'
-                  ? 'bg-[#C5A059] text-black shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               All Photos ({galleryItems.length})
             </button>
             <button
               onClick={() => setGalleryFilter('video')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                 galleryFilter === 'video'
-                  ? 'bg-[#005A2B] text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Play className="w-3 h-3 fill-current text-[#E5C378]" />
+              <Play className="w-3 h-3 fill-current text-white" />
               <span>Video Tours</span>
             </button>
             <button
               onClick={() => setGalleryFilter('aerial')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer ${
                 galleryFilter === 'aerial'
-                  ? 'bg-[#005A2B] text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Aerial Views
             </button>
             <button
               onClick={() => setGalleryFilter('night')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer ${
                 galleryFilter === 'night'
-                  ? 'bg-[#005A2B] text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Night Lights
             </button>
             <button
               onClick={() => setGalleryFilter('interior')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer ${
                 galleryFilter === 'interior'
-                  ? 'bg-[#005A2B] text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Pitch &amp; Bowl
             </button>
             <button
               onClick={() => setGalleryFilter('facade')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer ${
                 galleryFilter === 'facade'
-                  ? 'bg-[#005A2B] text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Maasai Shield
@@ -197,38 +197,38 @@ export const GallerySection: React.FC = () => {
             <div
               key={item.id}
               onClick={() => setActiveImage(item)}
-              className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#0d1410] border border-[#1e2c24] cursor-pointer shadow-xl hover:border-[#C5A059] transition-all duration-300"
+              className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 border border-gray-200 cursor-pointer shadow-xs hover:border-blue-500 hover:shadow-md transition-all duration-300"
             >
               <img
                 src={item.src}
                 alt={item.title}
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
+                className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-300 ease-out"
               />
 
               {/* Centered play icon for video items */}
               {item.isVideo && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-12 h-12 rounded-full bg-black/75 border border-[#E5C378]/70 flex items-center justify-center text-[#E5C378] group-hover:scale-115 group-hover:bg-[#005A2B] transition-all shadow-xl">
+                  <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
                     <Play className="w-5 h-5 fill-current ml-0.5" />
                   </div>
                 </div>
               )}
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#E5C378]">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-300">
                   {item.category.toUpperCase()}
                 </span>
                 <p className="text-xs font-bold text-white mt-0.5 line-clamp-1">{item.title}</p>
-                <div className="mt-2 flex items-center gap-1.5 text-[10px] text-slate-300">
+                <div className="mt-2 flex items-center gap-1.5 text-[10px] text-gray-200">
                   {item.isVideo ? (
                     <>
-                      <Play className="w-3 h-3 text-[#E5C378] fill-current" />
+                      <Play className="w-3 h-3 text-white fill-current" />
                       <span>Click to play video</span>
                     </>
                   ) : (
                     <>
-                      <Maximize2 className="w-3 h-3 text-[#0FA958]" />
+                      <Maximize2 className="w-3 h-3 text-blue-300" />
                       <span>Click to view in 4K</span>
                     </>
                   )}
@@ -240,18 +240,18 @@ export const GallerySection: React.FC = () => {
 
       </div>
 
-      {/* Lightbox Modal with Caption */}
+      {/* Lightbox Modal */}
       {activeImage && (
-        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="relative max-w-5xl w-full">
             <button
               onClick={() => setActiveImage(null)}
-              className="absolute -top-12 right-0 p-2 text-white hover:text-[#C5A059] cursor-pointer flex items-center gap-1 text-xs"
+              className="absolute -top-10 right-0 p-1 text-white hover:text-gray-300 cursor-pointer flex items-center gap-1 text-xs font-medium"
             >
               <span>Close</span>
               <X className="w-5 h-5" />
             </button>
-            <div className="rounded-2xl overflow-hidden border border-[#1e2c24] bg-[#0c120f] shadow-2xl">
+            <div className="rounded-xl overflow-hidden border border-gray-200 bg-white shadow-2xl">
               {activeImage.isVideo ? (
                 <div className="relative aspect-video w-full bg-black">
                   <iframe
@@ -270,11 +270,11 @@ export const GallerySection: React.FC = () => {
                   className="w-full max-h-[75vh] object-contain mx-auto bg-black"
                 />
               )}
-              <div className="p-4 bg-[#080d0a] border-t border-[#1c2c22]">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wide">
+              <div className="p-4 bg-white border-t border-gray-200">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
                   {activeImage.title}
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-gray-600 mt-1">
                   {activeImage.caption}
                 </p>
               </div>

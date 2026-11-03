@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AdminStats, EventItem, UserProfile } from '../types';
 import { formatKes } from '../utils/qrcode';
-import { Shield, Plus, DollarSign, Users, Ticket, Activity, Edit3, Trash2, CheckCircle2, BarChart3, AlertCircle, Sparkles, Newspaper, Megaphone } from 'lucide-react';
+import { Shield, Plus, DollarSign, Users, Ticket, Activity, Trash2, CheckCircle2, Megaphone } from 'lucide-react';
 
 interface AdminDashboardProps {
   currentUser: UserProfile;
@@ -140,29 +140,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         fetchStats();
       }
     } catch (err) {
-      alert('Failed to create event');
+      console.error(err);
     }
   };
 
-  const handleDeleteEvent = async (id: string) => {
-    if (!window.confirm('Delete this event? It will be removed from fixtures and ticketing.')) {
-      return;
-    }
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!window.confirm('Delete this event? All associated tickets will be archived.')) return;
     try {
-      const res = await fetch(`/api/events/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/events/${eventId}`, { method: 'DELETE' });
       if (res.ok) {
         onRefreshEvents();
         fetchStats();
       }
     } catch (err) {
-      alert('Failed to delete event');
+      console.error(err);
     }
   };
 
   const handleManualIssueTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/tickets/issue-manual', {
+      const res = await fetch('/api/admin/issue-ticket', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -170,7 +168,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           sectionCode: manualSectionCode,
           attendeeName: manualName,
           attendeeNationalId: manualIdNumber,
-          contactPhone: manualPhone,
+          attendeePhone: manualPhone,
           seatInfo: manualSeat,
         }),
       });
@@ -179,80 +177,78 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       if (res.ok) {
         setManualIssuedResult(data);
         fetchStats();
-        onRefreshEvents();
       }
     } catch (err) {
-      alert('Failed to issue manual ticket');
+      console.error(err);
     }
   };
 
   const handleCreateAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!announcementText.trim()) return;
     try {
       const res = await fetch('/api/announcements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          headline: announcementText.trim(),
+          message: announcementText,
           severity: announcementSeverity,
+          linkUrl: '#events',
         }),
       });
+
       if (res.ok) {
         setShowAnnouncementModal(false);
         setAnnouncementText('');
-        alert('Matchday announcement broadcast live to the ticker bar!');
+        alert('Matchday announcement broadcasted successfully!');
       }
     } catch (err) {
-      alert('Failed to post announcement');
+      console.error(err);
     }
   };
 
   return (
-    <div className="py-12 bg-[#060908] min-h-screen text-slate-200">
+    <div className="py-12 bg-gray-50 min-h-screen text-gray-700 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Admin Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-[#1c2c22]">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#005A2B] to-[#C5A059] p-0.5 shadow-lg">
-              <div className="w-full h-full bg-[#060908] rounded-[10px] flex items-center justify-center text-[#C5A059]">
-                <Shield className="w-6 h-6" />
-              </div>
+        {/* Admin Header Bar */}
+        <div className="p-6 rounded-xl bg-white border border-gray-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700 shrink-0">
+              <Shield className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-black text-white uppercase tracking-tight">
-                  Stadium Operations &amp; Administration
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                  Talanta Stadium Command Console
                 </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#C5A059] text-black">
-                  Super Admin
+                <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                  Operations Admin
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Talanta Sports City (Raila Amolo Odinga International Stadium) · Master Console
+              <p className="text-xs text-gray-500 mt-0.5">
+                Operator: {currentUser.fullName} ({currentUser.email}) · Cloud SQL &amp; Safaricom Daraja Online
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setShowAnnouncementModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-[#0d1410] border border-[#1e2c24] text-xs font-semibold text-slate-300 hover:text-white cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-lg bg-white border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
-              <Megaphone className="w-3.5 h-3.5 text-[#E5C378]" />
-              <span>Broadcast Notice</span>
+              <Megaphone className="w-3.5 h-3.5 text-gray-600" />
+              <span>Post Announcement</span>
             </button>
             <button
               onClick={() => setShowManualTicketModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-[#0d1410] border border-[#1e2c24] text-xs font-semibold text-slate-300 hover:text-white cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-lg bg-white border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
-              <Ticket className="w-3.5 h-3.5 text-[#0FA958]" />
+              <Ticket className="w-3.5 h-3.5 text-gray-600" />
               <span>Issue Manual Pass</span>
             </button>
             <button
               onClick={onOpenScanner}
-              className="px-3.5 py-2 rounded-xl bg-[#0d1410] border border-[#1e2c24] text-xs font-semibold text-slate-300 hover:text-white cursor-pointer"
+              className="px-3.5 py-2 rounded-lg bg-white border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer shadow-sm"
             >
               Turnstile Scanner
             </button>
@@ -261,7 +257,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 loadEventSample('football');
                 setShowCreateModal(true);
               }}
-              className="px-4 py-2 rounded-xl bg-[#005A2B] hover:bg-[#007036] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md cursor-pointer flex items-center gap-1.5"
+              className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
               <span>Add Event Manually</span>
@@ -272,62 +268,62 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {/* 4 Primary Financial & Operational Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           
-          <div className="p-5 rounded-2xl bg-[#0a100c] border border-[#1e2c24] shadow-xl">
-            <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
+          <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
               <span className="font-semibold uppercase tracking-wider">Gross Ticketing Revenue</span>
-              <DollarSign className="w-4 h-4 text-[#C5A059]" />
+              <DollarSign className="w-4 h-4 text-blue-600" />
             </div>
-            <p className="text-2xl font-black text-[#E5C378] font-mono">
+            <p className="text-2xl font-bold text-gray-900 font-mono">
               {stats ? formatKes(stats.totalRevenueKes) : 'KES 18,450,000'}
             </p>
-            <p className="text-[11px] text-[#0FA958] mt-1 font-medium">Verified Safaricom M-Pesa STK Push</p>
+            <p className="text-xs text-green-700 mt-1 font-medium">Verified Safaricom M-Pesa STK Push</p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#0a100c] border border-[#1e2c24] shadow-xl">
-            <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
+          <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
               <span className="font-semibold uppercase tracking-wider">Total Tickets Issued</span>
-              <Ticket className="w-4 h-4 text-[#0FA958]" />
+              <Ticket className="w-4 h-4 text-blue-600" />
             </div>
-            <p className="text-2xl font-black text-white font-mono">
+            <p className="text-2xl font-bold text-gray-900 font-mono">
               {stats ? stats.totalTicketsSold.toLocaleString() : '115,244'}
             </p>
-            <p className="text-[11px] text-slate-400 mt-1 font-medium">Across all stadium tiers</p>
+            <p className="text-xs text-gray-500 mt-1">Across all stadium tiers</p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#0a100c] border border-[#1e2c24] shadow-xl">
-            <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
+          <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
               <span className="font-semibold uppercase tracking-wider">Turnstile Admitted</span>
-              <Activity className="w-4 h-4 text-emerald-400" />
+              <Activity className="w-4 h-4 text-blue-600" />
             </div>
-            <p className="text-2xl font-black text-white font-mono">
+            <p className="text-2xl font-bold text-gray-900 font-mono">
               {stats ? (39402).toLocaleString() : '39,402'}
             </p>
-            <p className="text-[11px] text-slate-400 mt-1 font-medium">Real-time gate check-ins</p>
+            <p className="text-xs text-gray-500 mt-1">Real-time gate check-ins</p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#0a100c] border border-[#1e2c24] shadow-xl">
-            <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
+          <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between text-gray-500 text-xs mb-2">
               <span className="font-semibold uppercase tracking-wider">Registered Attendees</span>
-              <Users className="w-4 h-4 text-amber-400" />
+              <Users className="w-4 h-4 text-blue-600" />
             </div>
-            <p className="text-2xl font-black text-white font-mono">
+            <p className="text-2xl font-bold text-gray-900 font-mono">
               {stats ? stats.registeredUsersCount.toLocaleString() : '14,890'}
             </p>
-            <p className="text-[11px] text-slate-400 mt-1 font-medium">National ID &amp; KYC verified</p>
+            <p className="text-xs text-gray-500 mt-1">National ID &amp; KYC verified</p>
           </div>
 
         </div>
 
         {/* Live Gate Throughput Monitor */}
-        <div className="bg-[#0a100c] rounded-2xl border border-[#1e2c24] p-6 shadow-xl mb-10">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm mb-10">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-base font-bold text-white uppercase tracking-wide">
+              <h3 className="text-base font-bold text-gray-900 uppercase tracking-wide">
                 Live Turnstile Gate Flow
               </h3>
-              <p className="text-xs text-slate-400">Current occupancy and scan throughput by stadium entrance</p>
+              <p className="text-xs text-gray-500">Current occupancy and scan throughput by stadium entrance</p>
             </div>
-            <span className="px-2.5 py-1 rounded text-[10px] font-bold uppercase bg-[#005A2B]/40 text-[#0FA958] border border-[#0FA958]/30">
+            <span className="px-2.5 py-1 rounded text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
               Turnstiles Synchronized
             </span>
           </div>
@@ -336,18 +332,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {stats?.gateThroughput.map((gate, i) => {
               const pct = Math.round((gate.scanned / gate.capacity) * 100);
               return (
-                <div key={i} className="p-3.5 rounded-xl bg-[#060908] border border-[#1c2c22]">
+                <div key={i} className="p-3.5 rounded-lg bg-gray-50 border border-gray-200">
                   <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="font-bold text-white truncate max-w-[180px]">{gate.gate}</span>
-                    <span className="font-mono text-[#E5C378] font-bold">{pct}%</span>
+                    <span className="font-semibold text-gray-900 truncate max-w-[180px]">{gate.gate}</span>
+                    <span className="font-mono text-blue-600 font-bold">{pct}%</span>
                   </div>
-                  <div className="w-full h-2 rounded-full bg-[#131c17] overflow-hidden">
+                  <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#005A2B] to-[#0FA958] rounded-full"
+                      className="h-full bg-blue-600 rounded-full"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+                  <div className="flex justify-between text-xs text-gray-500 mt-1 font-mono">
                     <span>{gate.scanned.toLocaleString()} Admitted</span>
                     <span>Cap: {gate.capacity.toLocaleString()}</span>
                   </div>
@@ -358,20 +354,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         {/* Events Management Table */}
-        <div className="bg-[#0a100c] rounded-2xl border border-[#1e2c24] p-6 shadow-xl">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-base font-bold text-white uppercase tracking-wide">
+              <h3 className="text-base font-bold text-gray-900 uppercase tracking-wide">
                 Configured Stadium Events &amp; Fixtures ({events.length})
               </h3>
-              <p className="text-xs text-slate-400">Manage ticketing allocations, pricing tiers, and event schedules</p>
+              <p className="text-xs text-gray-500">Manage ticketing allocations, pricing tiers, and event schedules</p>
             </div>
             <button
               onClick={() => {
                 loadEventSample('football');
                 setShowCreateModal(true);
               }}
-              className="px-3.5 py-1.5 rounded-lg bg-[#005A2B] text-white text-xs font-bold uppercase tracking-wider self-start sm:self-auto cursor-pointer"
+              className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors self-start sm:self-auto cursor-pointer shadow-sm"
             >
               + Add Event
             </button>
@@ -379,7 +375,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#060908] text-slate-400 uppercase tracking-wider font-semibold border-b border-[#1c2c22]">
+              <thead className="bg-gray-50 text-gray-700 uppercase tracking-wider font-semibold border-b border-gray-200">
                 <tr>
                   <th className="py-3 px-4">Event &amp; Tournament</th>
                   <th className="py-3 px-4">Category</th>
@@ -390,23 +386,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1c2c22]">
+              <tbody className="divide-y divide-gray-150">
                 {events.map((evt) => (
-                  <tr key={evt.id} className="hover:bg-[#0d1410] transition-colors">
+                  <tr key={evt.id} className="hover:bg-gray-50 transition-colors">
                     <td className="py-3.5 px-4">
-                      <p className="font-bold text-white">{evt.title}</p>
-                      <p className="text-[11px] text-slate-400">{evt.tournamentName}</p>
+                      <p className="font-semibold text-gray-900">{evt.title}</p>
+                      <p className="text-xs text-gray-500">{evt.tournamentName}</p>
                     </td>
-                    <td className="py-3.5 px-4 capitalize text-slate-300">{evt.categoryId}</td>
-                    <td className="py-3.5 px-4 text-slate-300 font-mono">{evt.eventDate} · {evt.startTime}</td>
-                    <td className="py-3.5 px-4 font-mono text-[#E5C378]">
+                    <td className="py-3.5 px-4 capitalize text-gray-700">{evt.categoryId}</td>
+                    <td className="py-3.5 px-4 text-gray-700 font-mono">{evt.eventDate} · {evt.startTime}</td>
+                    <td className="py-3.5 px-4 font-mono text-blue-600 font-semibold">
                       {formatKes(evt.minPriceKes)} - {formatKes(evt.maxPriceKes)}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-white">
+                    <td className="py-3.5 px-4 font-mono text-gray-900">
                       {evt.ticketsSold.toLocaleString()} / {evt.totalCapacity.toLocaleString()}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#005A2B]/40 text-[#0FA958] border border-[#0FA958]/30">
+                      <span className="px-2 py-0.5 rounded text-xs font-semibold uppercase bg-green-50 text-green-700 border border-green-200">
                         {evt.status}
                       </span>
                     </td>
@@ -414,7 +410,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <button
                         onClick={() => handleDeleteEvent(evt.id)}
                         title="Delete Event"
-                        className="p-1.5 rounded text-slate-400 hover:text-red-400 hover:bg-[#131c17] transition-colors cursor-pointer"
+                        className="p-1.5 rounded text-gray-400 hover:text-red-600 hover:bg-gray-100 transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -430,74 +426,74 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* CREATE EVENT MODAL WITH SAMPLE TEMPLATES */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-          <div className="relative w-full max-w-xl rounded-2xl bg-[#0c120f] border border-[#1e2c24] p-4 sm:p-6 shadow-2xl text-xs my-auto max-h-[92vh] overflow-y-auto flex flex-col">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="relative w-full max-w-xl rounded-xl bg-white border border-gray-200 p-5 sm:p-6 shadow-2xl text-xs my-auto max-h-[92vh] overflow-y-auto flex flex-col font-sans">
             
-            <div className="flex items-center justify-between pb-3 border-b border-[#1c2c22] mb-4 shrink-0">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-4 shrink-0">
               <div>
-                <h3 className="text-base font-bold text-white">Manual Event Creation &amp; Samples</h3>
-                <p className="text-[11px] text-slate-400">Click a sample template below to autofill or type manually.</p>
+                <h3 className="text-base font-bold text-gray-900">Event Creation &amp; Presets</h3>
+                <p className="text-xs text-gray-500">Click a sample template below to autofill or type manually.</p>
               </div>
-              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-white">✕</button>
+              <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-700">✕</button>
             </div>
 
             {/* Quick Sample Presets */}
-            <div className="mb-4 p-3 rounded-xl bg-[#060908] border border-[#1e2c24]">
-              <span className="text-[10px] uppercase font-bold text-[#C5A059] block mb-2">
+            <div className="mb-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
+              <span className="text-xs uppercase font-bold text-gray-700 block mb-2">
                 Click Sample to Autofill:
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => loadEventSample('football')}
-                  className="px-2.5 py-1 rounded-md bg-[#0d1410] border border-[#1e2c24] hover:border-[#0FA958] text-slate-200 text-[11px] cursor-pointer"
+                  className="px-2.5 py-1 rounded bg-white border border-gray-300 hover:border-blue-600 text-gray-700 text-xs cursor-pointer transition-colors"
                 >
-                  ⚽ Football (Harambee Stars vs Nigeria)
+                  Football (Harambee Stars vs Nigeria)
                 </button>
                 <button
                   type="button"
                   onClick={() => loadEventSample('concert')}
-                  className="px-2.5 py-1 rounded-md bg-[#0d1410] border border-[#1e2c24] hover:border-[#0FA958] text-slate-200 text-[11px] cursor-pointer"
+                  className="px-2.5 py-1 rounded bg-white border border-gray-300 hover:border-blue-600 text-gray-700 text-xs cursor-pointer transition-colors"
                 >
-                  🎵 Concert (Burna Boy Live)
+                  Concert (Burna Boy Live)
                 </button>
                 <button
                   type="button"
                   onClick={() => loadEventSample('rugby')}
-                  className="px-2.5 py-1 rounded-md bg-[#0d1410] border border-[#1e2c24] hover:border-[#0FA958] text-slate-200 text-[11px] cursor-pointer"
+                  className="px-2.5 py-1 rounded bg-white border border-gray-300 hover:border-blue-600 text-gray-700 text-xs cursor-pointer transition-colors"
                 >
-                  🏉 Rugby (Safari Sevens)
+                  Rugby (Safari Sevens)
                 </button>
                 <button
                   type="button"
                   onClick={() => loadEventSample('athletics')}
-                  className="px-2.5 py-1 rounded-md bg-[#0d1410] border border-[#1e2c24] hover:border-[#0FA958] text-slate-200 text-[11px] cursor-pointer"
+                  className="px-2.5 py-1 rounded bg-white border border-gray-300 hover:border-blue-600 text-gray-700 text-xs cursor-pointer transition-colors"
                 >
-                  🏃 Athletics (Olympic Trials)
+                  Athletics (Olympic Trials)
                 </button>
               </div>
             </div>
 
             <form onSubmit={handleCreateEvent} className="space-y-3">
               <div>
-                <label className="text-slate-300 block mb-1">Event Title</label>
+                <label className="text-gray-700 font-medium block mb-1">Event Title</label>
                 <input
                   type="text"
                   required
                   value={newEventTitle}
                   onChange={(e) => setNewEventTitle(e.target.value)}
                   placeholder="e.g. Kenya vs Ivory Coast"
-                  className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white"
+                  className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:border-blue-600"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-300 block mb-1">Category</label>
+                  <label className="text-gray-700 font-medium block mb-1">Category</label>
                   <select
                     value={newEventCategory}
                     onChange={(e) => setNewEventCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:border-blue-600"
                   >
                     <option value="football">Football</option>
                     <option value="concerts">Mega Concert</option>
@@ -506,66 +502,66 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="text-slate-300 block mb-1">Tournament / Banner</label>
+                  <label className="text-gray-700 font-medium block mb-1">Tournament / Banner</label>
                   <input
                     type="text"
                     value={newEventTournament}
                     onChange={(e) => setNewEventTournament(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-300 block mb-1">Date</label>
+                  <label className="text-gray-700 font-medium block mb-1">Date</label>
                   <input
                     type="date"
                     required
                     value={newEventDate}
                     onChange={(e) => setNewEventDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-300 block mb-1">Kickoff / Start Time</label>
+                  <label className="text-gray-700 font-medium block mb-1">Kickoff / Start Time</label>
                   <input
                     type="time"
                     value={newEventTime}
                     onChange={(e) => setNewEventTime(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-300 block mb-1">Min Ticket Price (KES)</label>
+                  <label className="text-gray-700 font-medium block mb-1">Min Ticket Price (KES)</label>
                   <input
                     type="number"
                     value={newEventMinPrice}
                     onChange={(e) => setNewEventMinPrice(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white font-mono"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 font-mono focus:outline-none focus:border-blue-600"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-300 block mb-1">Max Ticket Price (KES)</label>
+                  <label className="text-gray-700 font-medium block mb-1">Max Ticket Price (KES)</label>
                   <input
                     type="number"
                     value={newEventMaxPrice}
                     onChange={(e) => setNewEventMaxPrice(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white font-mono"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 font-mono focus:outline-none focus:border-blue-600"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-slate-300 block mb-1">Short Description</label>
+                <label className="text-gray-700 font-medium block mb-1">Short Description</label>
                 <textarea
                   rows={2}
                   value={newEventShortDesc}
                   onChange={(e) => setNewEventShortDesc(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white"
+                  className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:border-blue-600"
                 />
               </div>
 
@@ -573,13 +569,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 rounded-lg border border-[#1e2c24] text-slate-400 hover:text-white"
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-[#005A2B] text-white font-bold uppercase tracking-wider"
+                  className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors shadow-sm"
                 >
                   Save &amp; Publish Event
                 </button>
@@ -591,25 +587,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* MANUAL TICKET ISSUER MODAL */}
       {showManualTicketModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-          <div className="relative w-full max-w-lg rounded-2xl bg-[#0c120f] border border-[#1e2c24] p-4 sm:p-6 shadow-2xl text-xs my-auto max-h-[92vh] overflow-y-auto flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1c2c22] mb-4 shrink-0">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="relative w-full max-w-lg rounded-xl bg-white border border-gray-200 p-5 sm:p-6 shadow-2xl text-xs my-auto max-h-[92vh] overflow-y-auto flex flex-col font-sans">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-4 shrink-0">
               <div>
-                <h3 className="text-base font-bold text-white">Manual Match Ticket Issuer</h3>
-                <p className="text-[11px] text-slate-400">Issue direct passes for VIP guests, corporate delegations, or protocol.</p>
+                <h3 className="text-base font-bold text-gray-900">Manual Match Ticket Issuer</h3>
+                <p className="text-xs text-gray-500">Issue direct passes for VIP guests, corporate delegations, or protocol.</p>
               </div>
-              <button onClick={() => { setShowManualTicketModal(false); setManualIssuedResult(null); }} className="text-slate-400 hover:text-white">✕</button>
+              <button onClick={() => { setShowManualTicketModal(false); setManualIssuedResult(null); }} className="text-gray-400 hover:text-gray-700">✕</button>
             </div>
 
             {manualIssuedResult ? (
-              <div className="p-4 rounded-xl bg-[#005A2B]/20 border border-[#0FA958]/30 space-y-3">
-                <div className="flex items-center gap-2 text-[#0FA958] font-bold">
-                  <CheckCircle2 className="w-5 h-5" />
+              <div className="p-4 rounded-lg bg-green-50 border border-green-200 space-y-3">
+                <div className="flex items-center gap-2 text-green-800 font-bold">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
                   <span>Manual Ticket Successfully Issued &amp; Activated!</span>
                 </div>
-                <div className="p-3 bg-black/60 rounded-lg font-mono text-[11px] space-y-1">
-                  <p>Ticket Number: <strong className="text-white">{manualIssuedResult.ticket.ticketNumber}</strong></p>
-                  <p>Ref: <strong className="text-[#E5C378]">{manualIssuedResult.booking.bookingReference}</strong></p>
+                <div className="p-3 bg-white border border-gray-200 rounded-lg font-mono text-xs space-y-1 text-gray-800">
+                  <p>Ticket Number: <strong className="text-gray-900">{manualIssuedResult.ticket.ticketNumber}</strong></p>
+                  <p>Ref: <strong className="text-blue-600">{manualIssuedResult.booking.bookingReference}</strong></p>
                   <p>Attendee: {manualIssuedResult.ticket.attendeeName}</p>
                   <p>Stand: {manualIssuedResult.ticket.sectionName}</p>
                   <p>Turnstile: {manualIssuedResult.ticket.turnstileNumber}</p>
@@ -617,7 +613,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   type="button"
                   onClick={() => setManualIssuedResult(null)}
-                  className="w-full py-2 rounded-lg bg-[#005A2B] text-white font-bold"
+                  className="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors shadow-sm"
                 >
                   Issue Another Pass
                 </button>
@@ -625,11 +621,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             ) : (
               <form onSubmit={handleManualIssueTicket} className="space-y-3">
                 <div>
-                  <label className="text-slate-300 block mb-1">Select Event</label>
+                  <label className="text-gray-700 font-medium block mb-1">Select Event</label>
                   <select
                     value={manualEventId}
                     onChange={(e) => setManualEventId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:border-blue-600"
                   >
                     {events.map((e) => (
                       <option key={e.id} value={e.id}>{e.title}</option>
@@ -639,11 +635,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-slate-300 block mb-1">Seating Stand</label>
+                    <label className="text-gray-700 font-medium block mb-1">Seating Stand</label>
                     <select
                       value={manualSectionCode}
                       onChange={(e) => setManualSectionCode(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white"
+                      className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:border-blue-600"
                     >
                       <option value="VVIP_PRESIDENTIAL">VVIP Presidential Skybox</option>
                       <option value="VIP_GOLD_WEST">VIP Gold Terrace</option>
@@ -653,46 +649,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </select>
                   </div>
                   <div>
-                    <label className="text-slate-300 block mb-1">Specific Seat / Row</label>
+                    <label className="text-gray-700 font-medium block mb-1">Specific Seat / Row</label>
                     <input
                       type="text"
                       value={manualSeat}
                       onChange={(e) => setManualSeat(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white"
+                      className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-slate-300 block mb-1">Attendee Name</label>
+                    <label className="text-gray-700 font-medium block mb-1">Attendee Name</label>
                     <input
                       type="text"
                       required
                       value={manualName}
                       onChange={(e) => setManualName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white"
+                      className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
                   <div>
-                    <label className="text-slate-300 block mb-1">National ID / Passport</label>
+                    <label className="text-gray-700 font-medium block mb-1">National ID / Passport</label>
                     <input
                       type="text"
                       required
                       value={manualIdNumber}
                       onChange={(e) => setManualIdNumber(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white font-mono"
+                      className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 font-mono focus:outline-none focus:border-blue-600"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-slate-300 block mb-1">Phone Number</label>
+                  <label className="text-gray-700 font-medium block mb-1">Phone Number</label>
                   <input
                     type="text"
                     value={manualPhone}
                     onChange={(e) => setManualPhone(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white font-mono"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 font-mono focus:outline-none focus:border-blue-600"
                   />
                 </div>
 
@@ -700,13 +696,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowManualTicketModal(false)}
-                    className="px-4 py-2 rounded-lg border border-[#1e2c24] text-slate-400 hover:text-white"
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-lg bg-[#C5A059] text-black font-bold uppercase tracking-wider"
+                    className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors shadow-sm"
                   >
                     Issue Pass Now
                   </button>
@@ -719,37 +715,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* ANNOUNCEMENT BROADCASTER MODAL */}
       {showAnnouncementModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-          <div className="relative w-full max-w-lg rounded-2xl bg-[#0c120f] border border-[#1e2c24] p-4 sm:p-6 shadow-2xl text-xs my-auto max-h-[92vh] overflow-y-auto flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1c2c22] mb-4 shrink-0">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="relative w-full max-w-lg rounded-xl bg-white border border-gray-200 p-5 sm:p-6 shadow-2xl text-xs my-auto max-h-[92vh] overflow-y-auto flex flex-col font-sans">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-4 shrink-0">
               <div>
-                <h3 className="text-base font-bold text-white">Broadcast Matchday Notice</h3>
-                <p className="text-[11px] text-slate-400">Post urgent advisory to the top ticker across all fan devices.</p>
+                <h3 className="text-base font-bold text-gray-900">Broadcast Matchday Notice</h3>
+                <p className="text-xs text-gray-500">Post urgent advisory to the top ticker across all fan devices.</p>
               </div>
-              <button onClick={() => setShowAnnouncementModal(false)} className="text-slate-400 hover:text-white">✕</button>
+              <button onClick={() => setShowAnnouncementModal(false)} className="text-gray-400 hover:text-gray-700">✕</button>
             </div>
 
             <form onSubmit={handleCreateAnnouncement} className="space-y-4">
               <div>
-                <label className="text-slate-300 block mb-1">Announcement Message</label>
+                <label className="text-gray-700 font-medium block mb-1">Announcement Message</label>
                 <textarea
                   required
                   rows={3}
                   value={announcementText}
                   onChange={(e) => setAnnouncementText(e.target.value)}
                   placeholder="e.g. Kenya Railways matchday trains departing Nairobi Central at 15-minute intervals. Gates open."
-                  className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white"
+                  className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:border-blue-600"
                 />
               </div>
 
               <div>
-                <label className="text-slate-300 block mb-1">Severity Level</label>
+                <label className="text-gray-700 font-medium block mb-1">Severity Level</label>
                 <select
                   value={announcementSeverity}
                   onChange={(e) => setAnnouncementSeverity(e.target.value as any)}
-                  className="w-full px-3 py-2 rounded-lg bg-[#060908] border border-[#1e2c24] text-white"
+                  className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:border-blue-600"
                 >
-                  <option value="info">Information (Standard Green Notice)</option>
+                  <option value="info">Information (Standard Blue Notice)</option>
                   <option value="warning">Warning / Security Advisory (Amber Notice)</option>
                 </select>
               </div>
@@ -758,13 +754,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowAnnouncementModal(false)}
-                  className="px-4 py-2 rounded-lg border border-[#1e2c24] text-slate-400 hover:text-white"
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-[#005A2B] text-white font-bold uppercase tracking-wider"
+                  className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors shadow-sm"
                 >
                   Broadcast Live
                 </button>

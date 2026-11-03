@@ -182,7 +182,7 @@ export default function App() {
   const featuredEvent = events.find(e => e.isFeatured) || events[0];
 
   return (
-    <div className="min-h-screen bg-[#060908] text-slate-100 flex flex-col font-sans selection:bg-[#C5A059] selection:text-black">
+    <div className="min-h-screen bg-white text-gray-700 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
       
       {/* Top Announcements Ticker */}
       <MarqueeAlert announcements={announcements} />

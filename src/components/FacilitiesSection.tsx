@@ -34,19 +34,19 @@ export const FacilitiesSection: React.FC = () => {
   ];
 
   return (
-    <section id="facilities" className="py-20 bg-[#060908] border-t border-[#1c2c22]">
+    <section id="facilities" className="py-16 bg-gray-50 border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="text-xs uppercase tracking-[0.2em] font-bold text-[#C5A059] flex items-center justify-center gap-1.5 mb-2">
-            <Award className="w-3.5 h-3.5 text-[#E5C378]" />
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <span className="text-xs uppercase tracking-wider font-bold text-blue-600 flex items-center justify-center gap-1.5 mb-2">
+            <Award className="w-3.5 h-3.5 text-blue-600" />
             World-Class Infrastructure
           </span>
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white uppercase">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
             Stadium Facilities &amp; VIP Experience
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-slate-400">
+          <p className="mt-3 text-sm sm:text-base text-gray-600">
             Engineered to FIFA, CAF, and World Athletics premier specifications. Combining sustainable green architecture with elite hospitality.
           </p>
         </div>
@@ -56,36 +56,35 @@ export const FacilitiesSection: React.FC = () => {
           {facilities.map((fac, idx) => (
             <div
               key={idx}
-              className="rounded-2xl bg-[#0a100c] border border-[#1e2c24] hover:border-[#C5A059]/40 overflow-hidden shadow-2xl transition-all duration-300 flex flex-col justify-between group"
+              className="rounded-xl bg-white border border-gray-200 hover:border-blue-400 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
             >
-              <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900">
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-100">
                 <img
                   src={fac.image}
                   alt={fac.title}
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300 ease-out"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a100c] via-transparent to-black/30" />
-                <span className="absolute top-4 left-4 px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-black/80 text-[#E5C378] border border-[#C5A059]/40">
+                <span className="absolute top-4 left-4 px-3 py-1 rounded text-[10px] font-semibold uppercase tracking-wider bg-white/95 text-gray-800 border border-gray-200 shadow-xs">
                   {fac.category}
                 </span>
               </div>
 
               <div className="p-6 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-xl font-bold text-white group-hover:text-[#E5C378] transition-colors">
+                  <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                     {fac.title}
                   </h3>
-                  <p className="mt-2 text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  <p className="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed">
                     {fac.description}
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-[#1c2c22]">
+                <div className="mt-6 pt-4 border-t border-gray-100">
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {fac.specs.map((spec, sIdx) => (
-                      <div key={sIdx} className="flex items-center gap-1.5 text-slate-300">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#0FA958]" />
+                      <div key={sIdx} className="flex items-center gap-1.5 text-gray-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
                         <span>{spec}</span>
                       </div>
                     ))}
@@ -97,30 +96,30 @@ export const FacilitiesSection: React.FC = () => {
         </div>
 
         {/* Technical Specification Bento Highlights */}
-        <div className="mt-16 rounded-2xl bg-[#090f0c] border border-[#1e2c24] p-8 shadow-2xl">
-          <h3 className="text-lg font-bold text-white mb-6 uppercase tracking-wider text-center">
+        <div className="mt-12 rounded-2xl bg-white border border-gray-200 p-8 shadow-xs">
+          <h3 className="text-base font-bold text-gray-900 mb-6 uppercase tracking-wider text-center">
             Key Stadium Architectural Metrics
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div className="p-4 rounded-xl bg-[#060908] border border-[#1c2c22]">
-              <span className="text-3xl font-black text-[#E5C378] font-mono block">60,000</span>
-              <span className="text-xs font-bold text-white uppercase mt-1 block">Full Seating Capacity</span>
-              <span className="text-[11px] text-slate-400">100% covered from rain and sun</span>
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+              <span className="text-3xl font-bold text-gray-900 font-mono block">60,000</span>
+              <span className="text-xs font-semibold text-gray-900 uppercase mt-1 block">Full Seating Capacity</span>
+              <span className="text-[11px] text-gray-500">100% covered from rain and sun</span>
             </div>
-            <div className="p-4 rounded-xl bg-[#060908] border border-[#1c2c22]">
-              <span className="text-3xl font-black text-[#0FA958] font-mono block">72</span>
-              <span className="text-xs font-bold text-white uppercase mt-1 block">Automated Turnstiles</span>
-              <span className="text-[11px] text-slate-400">Processes 1,200 fans/min</span>
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+              <span className="text-3xl font-bold text-blue-600 font-mono block">72</span>
+              <span className="text-xs font-semibold text-gray-900 uppercase mt-1 block">Automated Turnstiles</span>
+              <span className="text-[11px] text-gray-500">Processes 1,200 fans/min</span>
             </div>
-            <div className="p-4 rounded-xl bg-[#060908] border border-[#1c2c22]">
-              <span className="text-3xl font-black text-[#E5C378] font-mono block">3.2 MW</span>
-              <span className="text-xs font-bold text-white uppercase mt-1 block">Solar Canopy Power</span>
-              <span className="text-[11px] text-slate-400">Self-sustaining green grid</span>
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+              <span className="text-3xl font-bold text-gray-900 font-mono block">3.2 MW</span>
+              <span className="text-xs font-semibold text-gray-900 uppercase mt-1 block">Solar Canopy Power</span>
+              <span className="text-[11px] text-gray-500">Self-sustaining green grid</span>
             </div>
-            <div className="p-4 rounded-xl bg-[#060908] border border-[#1c2c22]">
-              <span className="text-3xl font-black text-[#0FA958] font-mono block">2,500 Lux</span>
-              <span className="text-xs font-bold text-white uppercase mt-1 block">4K LED Floodlights</span>
-              <span className="text-[11px] text-slate-400">Broadcast flicker-free ready</span>
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+              <span className="text-3xl font-bold text-blue-600 font-mono block">2,500 Lux</span>
+              <span className="text-xs font-semibold text-gray-900 uppercase mt-1 block">4K LED Floodlights</span>
+              <span className="text-[11px] text-gray-500">Broadcast flicker-free ready</span>
             </div>
           </div>
         </div>

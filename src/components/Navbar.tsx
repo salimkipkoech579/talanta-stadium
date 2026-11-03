@@ -35,8 +35,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#060908]/90 backdrop-blur-md border-b border-[#1c2c22]">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-6">
+    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-xs">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-6">
         
         {/* Zone 1: Brand Zone */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -44,32 +44,30 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setActiveTab('home')}
             className="flex items-center gap-2 sm:gap-3 text-left group cursor-pointer"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-[#005A2B] via-[#0d2a1b] to-[#C5A059] p-0.5 shadow-md flex items-center justify-center shrink-0">
-              <div className="w-full h-full bg-[#060908] rounded-[6px] flex items-center justify-center">
-                <span className="font-extrabold text-xs sm:text-base tracking-wider text-[#C5A059]">TS</span>
-              </div>
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-blue-600 shadow-sm flex items-center justify-center shrink-0 text-white font-bold text-sm sm:text-base">
+              TS
             </div>
             <div className="flex flex-col">
-              <span className="text-sm sm:text-xl font-black tracking-tight text-white uppercase whitespace-nowrap group-hover:text-[#E5C378] transition-colors">
+              <span className="text-base sm:text-xl font-bold tracking-tight text-gray-900 whitespace-nowrap group-hover:text-blue-600 transition-colors">
                 Talanta Stadium
               </span>
-              <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-[#0FA958] font-semibold -mt-0.5 hidden xs:inline sm:inline">
-                Nairobi · Kenya
+              <span className="text-[10px] sm:text-xs text-gray-500 font-medium -mt-0.5">
+                Nairobi, Kenya
               </span>
             </div>
           </button>
         </div>
 
-        {/* Zone 2: 4-6 concise single-line nav links */}
-        <nav className="hidden lg:flex items-center gap-6 xl:gap-7 text-sm font-medium text-slate-300">
+        {/* Zone 2: Concise single-line nav links */}
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-sm font-medium text-gray-600">
           {navLinks.map((link) => (
             <button
               key={link.id}
               onClick={() => setActiveTab(link.id)}
               className={`whitespace-nowrap shrink-0 transition-colors py-1 cursor-pointer ${
                 activeTab === link.id
-                  ? 'text-[#E5C378] font-semibold border-b-2 border-[#C5A059]'
-                  : 'hover:text-white'
+                  ? 'text-blue-600 font-semibold border-b-2 border-blue-600'
+                  : 'hover:text-gray-900'
               }`}
             >
               {link.label}
@@ -80,8 +78,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setActiveTab('admin')}
               className={`whitespace-nowrap shrink-0 transition-colors py-1 cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'admin'
-                  ? 'text-[#C5A059] font-semibold border-b-2 border-[#C5A059]'
-                  : 'text-amber-400 hover:text-amber-300'
+                  ? 'text-blue-600 font-semibold border-b-2 border-blue-600'
+                  : 'text-blue-600 hover:text-blue-800'
               }`}
             >
               <Shield className="w-3.5 h-3.5" />
@@ -90,32 +88,32 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </nav>
 
-        {/* Zone 3: 1 Primary Action Area */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        {/* Zone 3: Action Area */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           
-          {/* Steward Gate Scanner quick button */}
+          {/* Steward Gate Scanner button */}
           <button
             onClick={onOpenScanner}
             title="Gate Steward QR Ticket Scanner"
-            className="p-2 sm:p-2.5 rounded-lg border border-[#1e2c24] bg-[#0d1410] text-slate-300 hover:text-[#E5C378] hover:border-[#C5A059]/40 transition-colors cursor-pointer flex items-center gap-1.5 text-xs"
+            className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-blue-600 hover:border-blue-400 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-medium shadow-xs"
           >
-            <QrCode className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0FA958]" />
+            <QrCode className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
             <span className="hidden md:inline">Scanner</span>
           </button>
 
-          {/* User Dashboard / Tickets CTA */}
+          {/* User Dashboard / Tickets CTA Button (BLUE) */}
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-semibold tracking-wide whitespace-nowrap shrink-0 cursor-pointer transition-all flex items-center gap-1.5 sm:gap-2 ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 cursor-pointer transition-colors flex items-center gap-1.5 sm:gap-2 shadow-xs ${
               activeTab === 'dashboard'
-                ? 'bg-[#C5A059] text-black shadow-lg shadow-[#C5A059]/20'
-                : 'bg-[#005A2B] hover:bg-[#007036] text-white border border-[#0FA958]/30 shadow-md'
+                ? 'bg-blue-700 text-white'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
             }`}
           >
             <Ticket className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-            <span className="hidden sm:inline">My Tickets</span>
+            <span>My Tickets</span>
             {myTicketsCount > 0 && (
-              <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-white text-[#005A2B] font-bold">
+              <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-white text-blue-700 font-bold">
                 {myTicketsCount}
               </span>
             )}
@@ -125,25 +123,25 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="relative">
             <button
               onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-              className="flex items-center gap-1.5 p-1.5 sm:pr-2.5 rounded-lg border border-[#1e2c24] bg-[#0d1410] hover:border-slate-700 text-xs text-slate-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-xs text-gray-700 transition-colors cursor-pointer shadow-xs"
             >
-              <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-slate-200 shrink-0">
-                <User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 shrink-0">
+                <User className="w-3.5 h-3.5" />
               </div>
-              <span className="hidden md:inline capitalize font-medium text-slate-200">
+              <span className="hidden md:inline capitalize font-medium text-gray-700">
                 {currentUser.role.replace('_', ' ')}
               </span>
             </button>
 
             {roleDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-56 rounded-xl bg-[#0d1410] border border-[#1e2c24] shadow-2xl p-2 z-50">
-                <div className="px-3 py-2 border-b border-[#1c2c22]">
-                  <p className="text-xs font-semibold text-white">{currentUser.fullName}</p>
-                  <p className="text-[11px] text-slate-400 truncate">{currentUser.email}</p>
-                  <p className="text-[10px] text-[#0FA958] font-mono mt-0.5">ID: {currentUser.nationalId}</p>
+              <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white border border-gray-200 shadow-xl p-2 z-50">
+                <div className="px-3 py-2 border-b border-gray-100">
+                  <p className="text-xs font-semibold text-gray-900">{currentUser.fullName}</p>
+                  <p className="text-[11px] text-gray-500 truncate">{currentUser.email}</p>
+                  <p className="text-[10px] text-blue-600 font-mono mt-0.5">ID: {currentUser.nationalId}</p>
                 </div>
                 <div className="py-1">
-                  <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-wider text-slate-500 block">
+                  <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-wider text-gray-400 block">
                     Switch Mode:
                   </span>
                   <button
@@ -151,10 +149,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onSwitchRole('fan');
                       setRoleDropdownOpen(false);
                     }}
-                    className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-[#131c17] rounded-lg flex items-center justify-between"
+                    className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 rounded-lg flex items-center justify-between"
                   >
                     <span>Fan / Ticket Buyer</span>
-                    {currentUser.role === 'fan' && <Check className="w-3.5 h-3.5 text-[#0FA958]" />}
+                    {currentUser.role === 'fan' && <Check className="w-3.5 h-3.5 text-blue-600" />}
                   </button>
                   <button
                     onClick={() => {
@@ -162,10 +160,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                       setRoleDropdownOpen(false);
                       setActiveTab('admin');
                     }}
-                    className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-[#131c17] rounded-lg flex items-center justify-between"
+                    className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 rounded-lg flex items-center justify-between"
                   >
                     <span>Super Admin Console</span>
-                    {currentUser.role === 'super_admin' && <Check className="w-3.5 h-3.5 text-[#0FA958]" />}
+                    {currentUser.role === 'super_admin' && <Check className="w-3.5 h-3.5 text-blue-600" />}
                   </button>
                   <button
                     onClick={() => {
@@ -173,21 +171,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                       setRoleDropdownOpen(false);
                       onOpenScanner();
                     }}
-                    className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-[#131c17] rounded-lg flex items-center justify-between"
+                    className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 rounded-lg flex items-center justify-between"
                   >
                     <span>Match Steward (Gates)</span>
-                    {currentUser.role === 'match_operations' && <Check className="w-3.5 h-3.5 text-[#0FA958]" />}
+                    {currentUser.role === 'match_operations' && <Check className="w-3.5 h-3.5 text-blue-600" />}
                   </button>
                 </div>
 
                 {onGoogleSignIn && (
-                  <div className="pt-2 mt-1 border-t border-[#1c2c22]">
+                  <div className="pt-2 mt-1 border-t border-gray-100">
                     <button
                       onClick={() => {
                         setRoleDropdownOpen(false);
                         onGoogleSignIn();
                       }}
-                      className="w-full text-left px-3 py-2 text-xs font-semibold text-[#E5C378] hover:bg-[#131c17] rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
+                      className="w-full text-left px-3 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50 rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
                     >
                       <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -206,7 +204,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-slate-400 hover:text-white"
+            className="lg:hidden p-2 text-gray-600 hover:text-gray-900"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -215,7 +213,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-[#1c2c22] bg-[#060908] px-4 pt-3 pb-6 space-y-2">
+        <div className="lg:hidden border-t border-gray-200 bg-white px-4 pt-3 pb-6 space-y-2">
           {navLinks.map((link) => (
             <button
               key={link.id}
@@ -225,8 +223,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className={`block w-full text-left px-3 py-2 rounded-lg text-sm font-medium ${
                 activeTab === link.id
-                  ? 'bg-[#0d1410] text-[#E5C378]'
-                  : 'text-slate-300 hover:bg-[#0d1410]'
+                  ? 'bg-blue-50 text-blue-600 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
               {link.label}
@@ -238,7 +236,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setActiveTab('admin');
                 setMobileMenuOpen(false);
               }}
-              className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-amber-400 bg-amber-950/20"
+              className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-blue-600 bg-blue-50"
             >
               Admin Dashboard
             </button>
