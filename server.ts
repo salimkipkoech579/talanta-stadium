@@ -4,6 +4,19 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import {
+  fetchEventsFromDb,
+  fetchSectionsFromDb,
+  fetchNewsFromDb,
+  fetchAnnouncementsFromDb,
+  recordBookingInDb,
+  recordPaymentInDb,
+  logAuditEvent,
+} from './src/db/queries.ts';
+import { getOrCreateUser, getUserByUid } from './src/db/users.ts';
+import { adminAuth } from './src/lib/firebase-admin.ts';
+import { optionalAuth, requireAuth } from './src/middleware/auth.ts';
+import type { AuthRequest } from './src/middleware/auth.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -461,17 +474,90 @@ app.post('/api/auth/switch-role', (req: Request, res: Response) => {
   res.json({ success: true, user });
 });
 
+// Firebase Google Login verification & Cloud SQL user sync
+app.post('/api/auth/firebase-login', async (req: Request, res: Response) => {
+  const { idToken } = req.body;
+  if (!idToken) {
+    return res.status(400).json({ error: 'Missing ID token' });
+  }
+
+  try {
+    const decoded = await adminAuth.verifyIdToken(idToken);
+    const dbUser = await getOrCreateUser(
+      decoded.uid,
+      decoded.email || 'user@talantastadium.go.ke',
+      decoded.name || decoded.email?.split('@')[0],
+      'fan'
+    );
+
+    const sessionUser = {
+      id: decoded.uid,
+      email: decoded.email || '',
+      fullName: decoded.name || decoded.email?.split('@')[0] || 'Fan',
+      phoneNumber: (decoded as any).phone_number || '',
+      nationalId: '',
+      role: dbUser?.role || 'fan',
+      avatarUrl: decoded.picture || '',
+    };
+
+    const existingIndex = DB.users.findIndex(u => u.id === decoded.uid);
+    if (existingIndex >= 0) {
+      DB.users[existingIndex] = sessionUser;
+    } else {
+      DB.users.push(sessionUser);
+    }
+
+    res.json({ success: true, user: sessionUser });
+  } catch (err: any) {
+    console.error('Firebase token verification error:', err);
+    res.status(401).json({ error: 'Invalid authentication token' });
+  }
+});
+
 // Events List
-app.get('/api/events', (req: Request, res: Response) => {
+app.get('/api/events', async (req: Request, res: Response) => {
   const { category, search } = req.query;
-  let filtered = [...DB.events];
+  let eventList = [...DB.events];
+
+  try {
+    const dbEvents = await fetchEventsFromDb();
+    if (dbEvents && dbEvents.length > 0) {
+      eventList = dbEvents.map((e: any) => ({
+        id: e.eventId,
+        categoryId: e.categoryId,
+        categoryName: e.categoryName,
+        title: e.title,
+        slug: e.slug,
+        shortDescription: e.shortDescription,
+        fullDescription: e.fullDescription,
+        eventDate: e.eventDate,
+        startTime: e.startTime,
+        gatesOpenTime: e.gatesOpenTime,
+        homeTeam: e.homeTeam,
+        awayTeam: e.awayTeam,
+        tournamentName: e.tournamentName,
+        bannerImageUrl: e.bannerImageUrl,
+        venueName: e.venueName,
+        minPriceKes: e.minPriceKes,
+        maxPriceKes: e.maxPriceKes,
+        totalCapacity: e.totalCapacity,
+        ticketsSold: e.ticketsSold,
+        status: e.status,
+        isFeatured: e.isFeatured,
+      }));
+    }
+  } catch (err) {
+    console.error('Error fetching events from Cloud SQL:', err);
+  }
+
+  let filtered = [...eventList];
 
   if (category && category !== 'all') {
     filtered = filtered.filter(e => e.categoryId === category);
   }
   if (search) {
     const s = String(search).toLowerCase();
-    filtered = filtered.filter(e => e.title.toLowerCase().includes(s) || e.tournamentName.toLowerCase().includes(s));
+    filtered = filtered.filter(e => e.title.toLowerCase().includes(s) || (e.tournamentName && e.tournamentName.toLowerCase().includes(s)));
   }
 
   res.json({ events: filtered });
@@ -614,7 +700,28 @@ app.post('/api/announcements', (req: Request, res: Response) => {
 });
 
 // Seating sections list
-app.get('/api/seating', (_req: Request, res: Response) => {
+app.get('/api/seating', async (_req: Request, res: Response) => {
+  try {
+    const dbSections = await fetchSectionsFromDb();
+    if (dbSections && dbSections.length > 0) {
+      const sections = dbSections.map((s: any) => ({
+        id: `sec_${s.id}`,
+        code: s.sectionCode,
+        name: s.name,
+        standLocation: s.standLocation,
+        tierLevel: s.tierLevel,
+        capacity: s.capacity,
+        gateEntrance: s.gateEntrance,
+        amenities: s.amenities ? (typeof s.amenities === 'string' ? JSON.parse(s.amenities) : s.amenities) : [],
+        colorHex: s.colorHex,
+        priceKes: s.priceKes,
+        availableSeats: s.availableSeats,
+      }));
+      return res.json({ sections });
+    }
+  } catch (err) {
+    console.error('Error querying seating sections from Cloud SQL:', err);
+  }
   res.json({ sections: DB.sections });
 });
 
@@ -624,8 +731,44 @@ app.get('/api/fixtures/results', (_req: Request, res: Response) => {
 });
 
 // News & Announcements
-app.get('/api/news', (_req: Request, res: Response) => {
-  res.json({ news: DB.news, announcements: DB.announcements.filter(a => a.isActive) });
+app.get('/api/news', async (_req: Request, res: Response) => {
+  let newsList = DB.news;
+  let annList = DB.announcements.filter(a => a.isActive);
+
+  try {
+    const [dbNews, dbAnnouncements] = await Promise.all([
+      fetchNewsFromDb(),
+      fetchAnnouncementsFromDb(),
+    ]);
+
+    if (dbNews && dbNews.length > 0) {
+      newsList = dbNews.map((n: any) => ({
+        id: n.articleId,
+        title: n.title,
+        slug: n.slug,
+        category: n.category,
+        excerpt: n.excerpt,
+        content: n.content,
+        authorName: n.authorName,
+        imageUrl: n.imageUrl,
+        publishedAt: n.publishedAt ? new Date(n.publishedAt).toISOString() : new Date().toISOString(),
+        isFeatured: n.isFeatured,
+      }));
+    }
+
+    if (dbAnnouncements && dbAnnouncements.length > 0) {
+      annList = dbAnnouncements.map((a: any) => ({
+        id: a.announcementId,
+        headline: a.headline,
+        severity: a.severity as any,
+        isActive: a.isActive,
+      }));
+    }
+  } catch (err) {
+    console.error('Error querying news from Cloud SQL:', err);
+  }
+
+  res.json({ news: newsList, announcements: annList });
 });
 
 app.post('/api/news', (req: Request, res: Response) => {
@@ -730,6 +873,12 @@ app.post('/api/bookings', (req: Request, res: Response) => {
 
   DB.bookings.unshift(newBooking);
 
+  // Persist to Cloud SQL asynchronously
+  recordBookingInDb(newBooking, generatedTickets).catch((err) => {
+    console.error('Error persisting booking to Cloud SQL:', err);
+  });
+  logAuditEvent('BOOKING_CREATED', newBooking.userId, newBooking.bookingReference, JSON.stringify({ amount: totalAmountKes }));
+
   res.status(201).json({
     booking: newBooking,
     amountKes: totalAmountKes,
@@ -826,6 +975,12 @@ app.post('/api/payments/mpesa/simulate-callback', (req: Request, res: Response) 
     if (event) {
       event.ticketsSold += booking.tickets.length;
     }
+
+    // Persist payment to Cloud SQL
+    recordPaymentInDb(tx).catch((err) => {
+      console.error('Error persisting payment to Cloud SQL:', err);
+    });
+    logAuditEvent('PAYMENT_CONFIRMED', tx.phoneNumber, tx.bookingReference, JSON.stringify({ receipt: mpesaReceiptNumber, amount: tx.amountKes }));
   }
 
   res.json({

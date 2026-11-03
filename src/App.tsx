@@ -16,6 +16,8 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { BookingModal } from './components/BookingModal';
 import { TicketPassModal } from './components/TicketPassModal';
 import { GateTurnstileScanner } from './components/GateTurnstileScanner';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleAuthProvider } from './lib/firebase';
 import { Footer } from './components/Footer';
 
 export default function App() {
@@ -156,6 +158,27 @@ export default function App() {
     setScannerOpen(true);
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      const cred = await signInWithPopup(auth, googleAuthProvider);
+      const token = await cred.user.getIdToken();
+      const res = await fetch('/api/auth/firebase-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: token }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.user) {
+          setCurrentUser(data.user);
+          fetchData();
+        }
+      }
+    } catch (err) {
+      console.error('Google Sign-In error:', err);
+    }
+  };
+
   const featuredEvent = events.find(e => e.isFeatured) || events[0];
 
   return (
@@ -175,6 +198,7 @@ export default function App() {
           setScannerOpen(true);
         }}
         myTicketsCount={userBookings.reduce((sum, b) => sum + (b.status === 'confirmed' ? b.tickets.length : 0), 0)}
+        onGoogleSignIn={handleGoogleSignIn}
       />
 
       {/* Main Content Router */}
