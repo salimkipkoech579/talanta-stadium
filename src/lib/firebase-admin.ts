@@ -1,13 +1,10 @@
-import { initializeApp, getApps, applicationDefault } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
+import type { Request, Response, NextFunction } from 'express';
+import { supabaseAuth, type SupabaseVerifiedUser } from './supabase-auth.ts';
 
-const projectId = process.env.GOOGLE_CLOUD_PROJECT || process.env.FIREBASE_PROJECT_ID;
-if (!projectId) {
-  throw new Error('Firebase Admin is not configured. Set GOOGLE_CLOUD_PROJECT or FIREBASE_PROJECT_ID.');
-}
+// Transitional export retained because server.ts currently imports this module by its
+// previous filename. Authentication itself is now verified by Supabase Auth.
+export const adminAuth = {
+  verifyIdToken: (token: string) => supabaseAuth.verifyAccessToken(token),
+};
 
-if (!getApps().length) {
-  initializeApp({ projectId, credential: applicationDefault() });
-}
-
-export const adminAuth = getAuth();
+export type { SupabaseVerifiedUser as DecodedIdToken };
