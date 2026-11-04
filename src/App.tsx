@@ -25,18 +25,18 @@ import { RoomVideoModal } from './components/RoomVideoModal';
 import { GateTurnstileScanner } from './components/GateTurnstileScanner';
 import { Footer } from './components/Footer';
 
-const defaultUser: UserProfile = {
-  id: 'usr_fan_01',
-  email: 'kipkoechvictor503@gmail.com',
-  fullName: 'Victor Kipkoech',
-  phoneNumber: '0712345678',
-  nationalId: '34567890',
+const guestUser: UserProfile = {
+  id: '',
+  email: '',
+  fullName: 'Guest',
+  phoneNumber: '',
+  nationalId: '',
   role: 'fan',
 };
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
-  const [currentUser, setCurrentUser] = useState<UserProfile>(defaultUser);
+  const [currentUser, setCurrentUser] = useState<UserProfile>(guestUser);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [sections, setSections] = useState<SeatingSection[]>(DEFAULT_SECTIONS);
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -56,10 +56,7 @@ export default function App() {
   const fetchData = async () => {
     try {
       const [eventsRes, sectionsRes, newsRes, resultsRes, bookingsRes, roomsRes] = await Promise.all([
-        fetch('/api/events'),
-        fetch('/api/seating'),
-        fetch('/api/news'),
-        fetch('/api/fixtures/results'),
+        fetch('/api/events'), fetch('/api/seating'), fetch('/api/news'), fetch('/api/fixtures/results'),
         fetch('/api/bookings', { headers: { 'x-user-id': currentUser.id, 'x-user-role': currentUser.role } }),
         fetch('/api/room-bookings', { headers: { 'x-user-id': currentUser.id } }),
       ]);
@@ -82,10 +79,13 @@ export default function App() {
 
   useEffect(() => {
     const syncSession = async (_event: AuthChangeEvent, session: Session | null) => {
-      if (!session) return;
+      if (!session) {
+        setCurrentUser(guestUser);
+        return;
+      }
       try {
-        // The server endpoint is retained for compatibility, but now verifies this
-        // Supabase access token through Supabase Auth (not Firebase).
+        // Keep this compatibility endpoint until server.ts is switched to
+        // /api/auth/supabase-login; its token is now verified by Supabase Auth.
         const response = await fetch('/api/auth/firebase-login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -100,7 +100,7 @@ export default function App() {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) setTimeout(() => { void syncSession(event, session); }, 0);
+      setTimeout(() => { void syncSession(event, session); }, 0);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -116,29 +116,15 @@ export default function App() {
   const handleSwitchRole = async (role: 'fan' | 'super_admin' | 'match_operations') => {
     try {
       const response = await fetch('/api/auth/switch-role', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role }),
       });
       if (response.ok) setCurrentUser((await response.json()).user);
-    } catch (error) {
-      console.error('Failed to switch role:', error);
-    }
+    } catch (error) { console.error('Failed to switch role:', error); }
   };
 
-  const handleStartBooking = (event: EventItem, section?: SeatingSection) => {
-    setBookingEvent(event);
-    setBookingSection(section);
-  };
-  const handleTestScanTicket = (ticket: TicketItem) => {
-    setActiveTicketPass(null);
-    setScannerPrefillTicket(ticket);
-    setScannerOpen(true);
-  };
-  const showScanner = () => {
-    setScannerPrefillTicket(null);
-    setScannerOpen(true);
-  };
+  const handleStartBooking = (event: EventItem, section?: SeatingSection) => { setBookingEvent(event); setBookingSection(section); };
+  const handleTestScanTicket = (ticket: TicketItem) => { setActiveTicketPass(null); setScannerPrefillTicket(ticket); setScannerOpen(true); };
+  const showScanner = () => { setScannerPrefillTicket(null); setScannerOpen(true); };
   const featuredEvent = events.find(event => event.isFeatured) || events[0];
 
   return <div className="min-h-screen bg-white text-gray-700 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">

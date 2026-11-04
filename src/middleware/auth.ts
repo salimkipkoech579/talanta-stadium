@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { supabaseAuth, type SupabaseVerifiedUser } from '../lib/firebase-admin.ts';
+import { supabaseAuth, type SupabaseVerifiedUser } from '../lib/supabase-auth.ts';
 
 export interface AuthRequest extends Request {
   user?: SupabaseVerifiedUser;
