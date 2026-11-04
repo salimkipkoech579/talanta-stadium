@@ -1,4 +1,2 @@
-import { supabase } from './supabase.ts';
-
-// Temporary compatibility export for any stale import paths.
-export { supabase };
+// Compatibility re-export only; the application uses Supabase Auth.
+export { supabase } from './supabase.ts';
