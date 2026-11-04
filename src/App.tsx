@@ -26,8 +26,12 @@ import { GateTurnstileScanner } from './components/GateTurnstileScanner';
 import { Footer } from './components/Footer';
 
 const defaultUser: UserProfile = {
-  id: 'usr_fan_01', email: 'kipkoechvictor503@gmail.com', fullName: 'Victor Kipkoech',
-  phoneNumber: '0712345678', nationalId: '34567890', role: 'fan',
+  id: 'usr_fan_01',
+  email: 'kipkoechvictor503@gmail.com',
+  fullName: 'Victor Kipkoech',
+  phoneNumber: '0712345678',
+  nationalId: '34567890',
+  role: 'fan',
 };
 
 export default function App() {
@@ -52,38 +56,50 @@ export default function App() {
   const fetchData = async () => {
     try {
       const [eventsRes, sectionsRes, newsRes, resultsRes, bookingsRes, roomsRes] = await Promise.all([
-        fetch('/api/events'), fetch('/api/seating'), fetch('/api/news'), fetch('/api/fixtures/results'),
+        fetch('/api/events'),
+        fetch('/api/seating'),
+        fetch('/api/news'),
+        fetch('/api/fixtures/results'),
         fetch('/api/bookings', { headers: { 'x-user-id': currentUser.id, 'x-user-role': currentUser.role } }),
         fetch('/api/room-bookings', { headers: { 'x-user-id': currentUser.id } }),
       ]);
       if (eventsRes.ok) setEvents((await eventsRes.json()).events || []);
       if (sectionsRes.ok) setSections((await sectionsRes.json()).sections || []);
-      if (newsRes.ok) { const data = await newsRes.json(); setNews(data.news || []); setAnnouncements(data.announcements || []); }
+      if (newsRes.ok) {
+        const data = await newsRes.json();
+        setNews(data.news || []);
+        setAnnouncements(data.announcements || []);
+      }
       if (resultsRes.ok) setPastResults((await resultsRes.json()).results || []);
       if (bookingsRes.ok) setUserBookings((await bookingsRes.json()).bookings || []);
       if (roomsRes.ok) setRoomBookings((await roomsRes.json()).bookings || []);
-    } catch (error) { console.error('Error fetching initial data:', error); }
+    } catch (error) {
+      console.error('Error fetching initial data:', error);
+    }
   };
 
   useEffect(() => { void fetchData(); }, [currentUser.id, currentUser.role]);
 
-  // Supabase redirects back from Google OAuth with a session; validate its access token
-  // on the server before syncing the app profile.
   useEffect(() => {
     const syncSession = async (_event: AuthChangeEvent, session: Session | null) => {
       if (!session) return;
       try {
+        // The server endpoint is retained for compatibility, but now verifies this
+        // Supabase access token through Supabase Auth (not Firebase).
         const response = await fetch('/api/auth/firebase-login', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ idToken: session.access_token }),
         });
         if (!response.ok) throw new Error('Unable to sync Supabase user profile');
         const { user } = await response.json();
         if (user) setCurrentUser(user);
-      } catch (error) { console.error('Supabase sign-in profile sync failed:', error); }
+      } catch (error) {
+        console.error('Supabase sign-in profile sync failed:', error);
+      }
     };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Defer network work until Supabase has finished its auth-state callback.
       if (session) setTimeout(() => { void syncSession(event, session); }, 0);
     });
     return () => subscription.unsubscribe();
@@ -98,17 +114,34 @@ export default function App() {
   };
 
   const handleSwitchRole = async (role: 'fan' | 'super_admin' | 'match_operations') => {
-    const response = await fetch('/api/auth/switch-role', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role }),
-    });
-    if (response.ok) setCurrentUser((await response.json()).user);
+    try {
+      const response = await fetch('/api/auth/switch-role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role }),
+      });
+      if (response.ok) setCurrentUser((await response.json()).user);
+    } catch (error) {
+      console.error('Failed to switch role:', error);
+    }
   };
-  const handleStartBooking = (event: EventItem, section?: SeatingSection) => { setBookingEvent(event); setBookingSection(section); };
-  const handleTestScanTicket = (ticket: TicketItem) => { setActiveTicketPass(null); setScannerPrefillTicket(ticket); setScannerOpen(true); };
-  const featuredEvent = events.find(event => event.isFeatured) || events[0];
-  const showScanner = () => { setScannerPrefillTicket(null); setScannerOpen(true); };
 
-  return <div className="min-h-screen bg-white text-gray-700 flex flex-col font-sans">
+  const handleStartBooking = (event: EventItem, section?: SeatingSection) => {
+    setBookingEvent(event);
+    setBookingSection(section);
+  };
+  const handleTestScanTicket = (ticket: TicketItem) => {
+    setActiveTicketPass(null);
+    setScannerPrefillTicket(ticket);
+    setScannerOpen(true);
+  };
+  const showScanner = () => {
+    setScannerPrefillTicket(null);
+    setScannerOpen(true);
+  };
+  const featuredEvent = events.find(event => event.isFeatured) || events[0];
+
+  return <div className="min-h-screen bg-white text-gray-700 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
     <MarqueeAlert announcements={announcements} />
     <Navbar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser}
       onSwitchRole={handleSwitchRole} onOpenScanner={showScanner}
@@ -119,7 +152,7 @@ export default function App() {
         <HeroSection featuredEvent={featuredEvent} onBookEvent={event => handleStartBooking(event)} onExploreSeating={() => setActiveTab('seating')} onViewEvents={() => setActiveTab('events')} />
         <StadiumVideoTour />
         <EventsSection events={events} onBookEvent={event => handleStartBooking(event)} pastResults={pastResults} />
-        <InteractiveSeatingPlan sections={sections} selectedEvent={featuredEvent} onSelectSection={section => featuredEvent && handleStartBooking(featuredEvent, section)} />
+        <InteractiveSeatingPlan sections={sections} selectedEvent={featuredEvent} onSelectSection={section => featuredEvent ? handleStartBooking(featuredEvent, section) : setActiveTab('events')} />
         <NairobiRoomsSection onSelectRoom={setSelectedRoomForDetails} onBookRoom={room => setSelectedRoomForBooking(room)} onWatchVideo={setSelectedRoomForVideo} />
         <FacilitiesSection /><GallerySection /><NewsSection news={news} /><ContactLocationSection />
       </>}
@@ -127,21 +160,26 @@ export default function App() {
       {activeTab === 'tour' && <><StadiumVideoTour /><FacilitiesSection /><GallerySection /></>}
       {activeTab === 'events' && <EventsSection events={events} onBookEvent={event => handleStartBooking(event)} pastResults={pastResults} />}
       {activeTab === 'seating' && <InteractiveSeatingPlan sections={sections} selectedEvent={featuredEvent} onSelectSection={section => featuredEvent && handleStartBooking(featuredEvent, section)} />}
-      {activeTab === 'facilities' && <FacilitiesSection />}{activeTab === 'news' && <NewsSection news={news} />}{activeTab === 'contact' && <ContactLocationSection />}
+      {activeTab === 'facilities' && <FacilitiesSection />}
+      {activeTab === 'news' && <NewsSection news={news} />}
+      {activeTab === 'contact' && <ContactLocationSection />}
       {activeTab === 'dashboard' && <UserDashboard currentUser={currentUser} bookings={userBookings} roomBookings={roomBookings}
-        onViewTicketPass={setActiveTicketPass} onCancelBooking={async id => { await fetch(`/api/bookings/${id}/cancel`, { method: 'POST' }); void fetchData(); }}
+        onViewTicketPass={setActiveTicketPass}
+        onCancelBooking={async id => { await fetch(`/api/bookings/${id}/cancel`, { method: 'POST' }); void fetchData(); }}
         onCancelRoomBooking={async id => { await fetch(`/api/room-bookings/${id}/cancel`, { method: 'POST' }); void fetchData(); }}
         onExploreEvents={() => setActiveTab('events')} onExploreRooms={() => setActiveTab('rooms')} />}
       {activeTab === 'admin' && <AdminDashboard currentUser={currentUser} events={events} onRefreshEvents={fetchData} onOpenScanner={showScanner} />}
     </main>
     <Footer onNavigate={setActiveTab} />
     {bookingEvent && <BookingModal event={bookingEvent} sections={sections} initialSection={bookingSection} currentUser={currentUser}
-      onClose={() => { setBookingEvent(null); setBookingSection(undefined); }} onBookingConfirmed={booking => { setUserBookings(previous => [booking, ...previous]); setBookingEvent(null); setActiveTicketPass(booking); void fetchData(); }} />}
+      onClose={() => { setBookingEvent(null); setBookingSection(undefined); }}
+      onBookingConfirmed={booking => { setUserBookings(previous => [booking, ...previous]); setBookingEvent(null); setBookingSection(undefined); setActiveTicketPass(booking); void fetchData(); }} />}
     {activeTicketPass && <TicketPassModal booking={activeTicketPass} onClose={() => setActiveTicketPass(null)} onTestScan={handleTestScanTicket} />}
     {selectedRoomForDetails && <RoomDetailsModal room={selectedRoomForDetails} onClose={() => setSelectedRoomForDetails(null)} onBookNow={room => { setSelectedRoomForDetails(null); setSelectedRoomForBooking(room); }} />}
     {selectedRoomForBooking && <RoomBookingModal room={selectedRoomForBooking} currentUser={currentUser} onClose={() => setSelectedRoomForBooking(null)} onBookingConfirmed={booking => { setRoomBookings(previous => [booking, ...previous]); void fetchData(); }} />}
     {selectedRoomForVideo && <RoomVideoModal room={selectedRoomForVideo} allRooms={NAIROBI_ROOMS} onClose={() => setSelectedRoomForVideo(null)}
-      onBookNow={room => { setSelectedRoomForVideo(null); setSelectedRoomForBooking(room); }} onViewDetails={room => { setSelectedRoomForVideo(null); setSelectedRoomForDetails(room); }} onSwitchRoom={setSelectedRoomForVideo} />}
+      onBookNow={room => { setSelectedRoomForVideo(null); setSelectedRoomForBooking(room); }}
+      onViewDetails={room => { setSelectedRoomForVideo(null); setSelectedRoomForDetails(room); }} onSwitchRoom={setSelectedRoomForVideo} />}
     {scannerOpen && <GateTurnstileScanner prefillTicket={scannerPrefillTicket} onClose={() => { setScannerOpen(false); setScannerPrefillTicket(null); }} />}
   </div>;
 }
